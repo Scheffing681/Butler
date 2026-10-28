@@ -3559,6 +3559,12 @@ body:has(#fccam) .fcplay{padding-top:46vh}
 .stsaf b{display:block;font-size:15px;margin-bottom:4px;color:#f5c98e}.stsaf p{margin:0 0 8px}
 .stsaf .stx{position:absolute;top:6px;right:6px}
 .ststeps{margin:4px 0 8px;padding-left:20px;line-height:1.55}.ststeps li{margin:6px 0}
+/* Home-screen app: keep everything clear of the status bar / notch */
+.app{box-sizing:border-box;padding-top:env(safe-area-inset-top,0px)}
+.dtsheet{padding-top:calc(env(safe-area-inset-top,0px) + 8px)}
+.tbset{padding-top:calc(env(safe-area-inset-top,0px) + 16px)}
+.fccam{top:env(safe-area-inset-top,0px)}
+.sub-hdr{min-height:48px}.sub-hdr>.iconbtn:first-child{width:44px;height:44px;margin-left:-6px}
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 </style>
 
