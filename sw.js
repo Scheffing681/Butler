@@ -1,7 +1,7 @@
 /* Network first for the app itself, so every update arrives at once; the last copy is kept for offline use.
    Program libraries (PDF viewer, camera model) are kept on the phone after the first use.
    In «fully offline» mode nothing leaves the phone: every request to another site is refused here. */
-const C='butler-v82',LIBS='butler-libs',PV='butler-pv';
+const C='butler-v83',LIBS='butler-libs',PV='butler-pv';
 const LIB_RE=/^https:\/\/(cdn\.jsdelivr\.net|cdnjs\.cloudflare\.com|unpkg\.com|storage\.googleapis\.com\/mediapipe-)/;
 let OFF=null;
 const offNow=()=>OFF!==null?Promise.resolve(OFF):caches.open(PV).then(c=>c.match('/__pv')).then(m=>m?m.text():'0').then(t=>(OFF=t==='1')).catch(()=>(OFF=false));
