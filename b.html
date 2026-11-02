@@ -137,6 +137,8 @@ async function unlock(){var pw=$('pwi').value;if(!pw)return;$('pwb').disabled=tr
   catch(x){$('pwm').textContent=T.bad;$('pwb').disabled=false;$('pwi').select();var b=$('pwbox');b.classList.remove('shake');void b.offsetWidth;b.classList.add('shake');return}
   try{await open(pt)}catch(x){fail()}}
 function fail(){$('wait').style.display='flex';$('pw').style.display='none';$('wt').textContent=T.broken}
+/* another letter opened in the same tab: show that one */
+window.addEventListener('hashchange',function(){location.reload()});
 window.addEventListener('load',function(){
   if(!data||(mode!=='1e'&&mode!=='1p')||!window.DecompressionStream||!window.crypto||!crypto.subtle){fail();return}
   if(mode==='1p'){open(b64u(data)).catch(fail);return}
