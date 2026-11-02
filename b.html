@@ -70,7 +70,7 @@ async function envWish(e){await envFonts();const W=1240,H=1754,cv=document.creat
   const sl=envWrap(g,e.sal||'',W-260);let y=420;sl.forEach(l=>{g.fillText(l,W/2,y);y+=110});
   g.fillStyle='#b08a45';g.font="44px 'EB Garamond',Georgia,serif";g.fillText('— ✦ —',W/2,y+20);y+=140;
   g.fillStyle='#2a2418';g.font="italic 48px 'EB Garamond',Georgia,serif";envWrap(g,e.wish==null?envt('wishes')[0]:e.wish,W-300).forEach(l=>{g.fillText(l,W/2,y);y+=72});
-  const me=meEnsure(),sig=[me.first,me.last].filter(Boolean).join(' ')||S.user.l2||'';g.textAlign='right';g.fillStyle='#2a2418';g.font=`84px ${/[а-яё]/i.test(sig)?"'Marck Script'":"'Great Vibes'"},cursive`;g.fillText(sig,W-150,H-380);
+  const me=meEnsure(),sig=[me.first,me.last].filter(Boolean).join(' ')||S.user.l2||'';g.textAlign='center';g.fillStyle='#2a2418';const sf=/[а-яё]/i.test(sig)?"'Marck Script'":"'Great Vibes'";let fs=84;g.font=`${fs}px ${sf},cursive`;while(fs>48&&g.measureText(sig).width>W-260){fs-=4;g.font=`${fs}px ${sf},cursive`}g.fillText(sig,W/2,H-380);
   envSeal(g,W/2,H-190,100,e.seal,e.wax);return cv}
 async function penTinted(pic,col,w,h){const b=await ASDB.get('pen:'+pic.id);if(!b)return null;const bm=await createImageBitmap(b),cv=document.createElement('canvas');cv.width=Math.max(1,Math.round(w));cv.height=Math.max(1,Math.round(h));
   /* cover: the drawing fills the box without being stretched (like a window onto the picture) */
