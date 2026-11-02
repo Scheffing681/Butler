@@ -105,7 +105,7 @@ async function ldLayout(ctx,opt){opt=opt||{};const draw=!opt.measure;
   if(d.crest&&draw){const im=new Image();im.src=LBCREST;try{await im.decode();const h=150,w=h*im.width/im.height;g.drawImage(im,(W-w)/2,y,w,h)}catch(e){}}if(d.crest)y+=184;
   g.font=headF;g.textAlign='left';
   if(d.head){ldHeadLines().forEach(l=>{txt(l,P,y);y+=30});y+=12}
-  g.textAlign='right';g.fillStyle=C.mut;txt(ldDateTxt(),W-P,y);g.fillStyle=C.fg;y+=60;g.textAlign='left';
+  g.textAlign='right';g.fillStyle=C.mut;g.font=bfo.date||headF;txt(ldDateTxt(),W-P,y);g.fillStyle=C.fg;y+=60;g.textAlign='left';
   if(x.subj){flow(x.subj,subjF,BLH,null);y+=22}
   if(pic&&pic.full&&pic.pos!=='t'&&tc&&draw)tc.full=await penTinted(pic,C.fg,pw,BOT-y).catch(()=>null);
   placePic();
