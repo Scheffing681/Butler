@@ -122,7 +122,9 @@ async function ldLayout(ctx,opt){opt=opt||{};const draw=!opt.measure;
 /* ---------- link → letter ---------- */
 function b64u(s){s=s.replace(/-/g,'+').replace(/_/g,'/');while(s.length%4)s+='=';var b=atob(s),u=new Uint8Array(b.length);for(var i=0;i<b.length;i++)u[i]=b.charCodeAt(i);return u}
 async function inflate(u8){var ds=new DecompressionStream('deflate-raw'),st=new Blob([u8]).stream().pipeThrough(ds);return new Uint8Array(await new Response(st).arrayBuffer())}
-var raw=(location.hash||'').slice(1),mode=raw.slice(0,2),data=raw.slice(2);
+var raw=(location.hash||'').slice(1),mode=raw.slice(0,2),data=raw.slice(2),dataU8=null;
+/* short link «#2<id>.<key>»: the sealed letter waits, encrypted, in a neutral store; the key never leaves the link */
+var BLOBURL='https://jsonblob.com/api/jsonBlob/';
 async function open(u8){var js=JSON.parse(new TextDecoder().decode(await inflate(u8)));SP=js;if(SP.C)LDNONE=SP.C;if(TX[SP.lang])setT(TX[SP.lang]);document.title=SP.title||'✉';S.user.l2=SP.l2||'';S.lang=SP.lang;
   if(SP.cover)BLOBS['env:pic']=new Blob([b64u(SP.cover)],{type:'image/jpeg'});
   /* the pen drawing travels as grey ink on white; turn it back into ink with a transparent background */
@@ -133,16 +135,22 @@ async function open(u8){var js=JSON.parse(new TextDecoder().decode(await inflate
   $('wait').style.display='none';window.__bkStart(pages)}
 async function ldPages(){return (await ldLayout('l')).pages}
 async function unlock(){var pw=$('pwi').value;if(!pw)return;$('pwb').disabled=true;$('pwm').textContent='';
-  try{var all=b64u(data),s=all.slice(0,16),v=all.slice(16,28),c=all.slice(28),enc=new TextEncoder(),k0=await crypto.subtle.importKey('raw',enc.encode(pw),'PBKDF2',false,['deriveKey']),key=await crypto.subtle.deriveKey({name:'PBKDF2',salt:s,iterations:210000,hash:'SHA-256'},k0,{name:'AES-GCM',length:256},false,['decrypt']),pt=new Uint8Array(await crypto.subtle.decrypt({name:'AES-GCM',iv:v},key,c))}
+  try{var all=dataU8||b64u(data),s=all.slice(0,16),v=all.slice(16,28),c=all.slice(28),enc=new TextEncoder(),k0=await crypto.subtle.importKey('raw',enc.encode(pw),'PBKDF2',false,['deriveKey']),key=await crypto.subtle.deriveKey({name:'PBKDF2',salt:s,iterations:210000,hash:'SHA-256'},k0,{name:'AES-GCM',length:256},false,['decrypt']),pt=new Uint8Array(await crypto.subtle.decrypt({name:'AES-GCM',iv:v},key,c))}
   catch(x){$('pwm').textContent=T.bad;$('pwb').disabled=false;$('pwi').select();var b=$('pwbox');b.classList.remove('shake');void b.offsetWidth;b.classList.add('shake');return}
   try{await open(pt)}catch(x){fail()}}
 function fail(){$('wait').style.display='flex';$('pw').style.display='none';$('wt').textContent=T.broken}
 /* another letter opened in the same tab: show that one */
 window.addEventListener('hashchange',function(){location.reload()});
 window.addEventListener('load',function(){
-  if(!data||(mode!=='1e'&&mode!=='1p')||!window.DecompressionStream||!window.crypto||!crypto.subtle){fail();return}
+  if(!window.DecompressionStream||!window.crypto||!crypto.subtle){fail();return}
+  if(raw.charAt(0)==='2'){var p=raw.slice(1).split('.');if(p.length!==2){fail();return}
+    fetch(BLOBURL+encodeURIComponent(p[0]),{headers:{Accept:'application/json'}}).then(function(r){if(!r.ok)throw 0;return r.json()}).then(function(j){var all=b64u(j.b),iv=all.slice(0,12),ct=all.slice(12);
+      return crypto.subtle.importKey('raw',b64u(p[1]),'AES-GCM',false,['decrypt']).then(function(k){return crypto.subtle.decrypt({name:'AES-GCM',iv:iv},k,ct)})}).then(function(buf){var u=new Uint8Array(buf),m=String.fromCharCode(u[0]);dataU8=u.slice(1);
+      if(m==='p'){open(dataU8).catch(fail);return}askPw()}).catch(fail);return}
+  if(!data||(mode!=='1e'&&mode!=='1p')){fail();return}
   if(mode==='1p'){open(b64u(data)).catch(fail);return}
-  $('wait').style.display='none';$('pw').style.display='flex';$('pwb').onclick=unlock;$('pwi').addEventListener('keydown',function(e){if(e.key==='Enter')unlock()});setTimeout(function(){$('pwi').focus()},300)});
+  askPw()});
+function askPw(){$('wait').style.display='none';$('pw').style.display='flex';$('pwb').onclick=unlock;$('pwi').addEventListener('keydown',function(e){if(e.key==='Enter')unlock()});setTimeout(function(){$('pwi').focus()},300)}
 })();
 </script>
 <script>
