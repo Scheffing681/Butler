@@ -1,7 +1,7 @@
 /* Network first for the app itself, so every update arrives at once; the last copy is kept for offline use.
    Program libraries (PDF viewer, camera model) are kept on the phone after the first use.
    In «fully offline» mode nothing leaves the phone: every request to another site is refused here. */
-const C='butler-v152',LIBS='butler-libs',PV='butler-pv';
+const C='butler-v153',LIBS='butler-libs',PV='butler-pv';
 const LIB_RE=/^https:\/\/(cdn\.jsdelivr\.net|cdnjs\.cloudflare\.com|unpkg\.com|storage\.googleapis\.com\/mediapipe-)/;
 let OFF=null;
 const offNow=()=>OFF!==null?Promise.resolve(OFF):caches.open(PV).then(c=>c.match('/__pv')).then(m=>m?m.text():'0').then(t=>(OFF=t==='1')).catch(()=>(OFF=false));
@@ -17,6 +17,6 @@ self.addEventListener('fetch',e=>{const r=e.request,u=new URL(r.url);
       return off?Response.error():fetch(r)}));
     return}
   if(r.method!=='GET')return;
-  if(/\/lib\/ocr\//.test(u.pathname)){e.respondWith(caches.open('butler-ocr').then(c=>c.match(r).then(m=>m||fetch(r).then(res=>{if(res&&res.ok)c.put(r,res.clone()).catch(()=>{});return res}))));return}
+  if(/\/lib\/(ocr\/|pdf-lib)/.test(u.pathname)){e.respondWith(caches.open('butler-ocr').then(c=>c.match(r).then(m=>m||fetch(r).then(res=>{if(res&&res.ok)c.put(r,res.clone()).catch(()=>{});return res}))));return}
   if(/\/ics\/[^/]+\.ics$/.test(u.pathname)){e.respondWith(caches.open('butler-ics').then(c=>c.match(r.url)).then(m=>m||new Response('',{status:404})));return}
   e.respondWith(fetch(r).then(res=>{if(res&&res.ok){const cp=res.clone();caches.open(C).then(c=>c.put(r,cp))}return res}).catch(()=>caches.match(r).then(m=>m||caches.match('index.html'))))});
