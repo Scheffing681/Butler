@@ -1,12 +1,12 @@
 /* Network first for the app itself, so every update arrives at once; the last copy is kept for offline use.
    Program libraries (PDF viewer, camera model) are kept on the phone after the first use.
    In «fully offline» mode nothing leaves the phone: every request to another site is refused here. */
-const C='butler-v204',LIBS='butler-libs',PV='butler-pv';
+const C='butler-v205',LIBS='butler-libs',PV='butler-pv';
 const LIB_RE=/^https:\/\/(cdn\.jsdelivr\.net|cdnjs\.cloudflare\.com|unpkg\.com|storage\.googleapis\.com\/mediapipe-)/;
 let OFF=null;
 const offNow=()=>OFF!==null?Promise.resolve(OFF):caches.open(PV).then(c=>c.match('/__pv')).then(m=>m?m.text():'0').then(t=>(OFF=t==='1')).catch(()=>(OFF=false));
 self.addEventListener('message',e=>{const d=e.data||{};if('pvOff' in d){OFF=!!d.pvOff;caches.open(PV).then(c=>c.put('/__pv',new Response(OFF?'1':'0'))).catch(()=>{})}});
-self.addEventListener('install',e=>{self.skipWaiting();e.waitUntil(caches.open(C).then(c=>c.addAll(['./','index.html','app.css?v=204','app.js?v=204','manifest.webmanifest','icons/icon-192.png','img/ic3.webp','img/clockhero.webp','img/butler.webp','fonts/fonts.css']).then(()=>c.addAll(['img/c_c49be66298.webp','img/c_a7436d1635.webp','img/c_caeee9c5b1.webp','img/person_m.webp','img/person_f.webp','lib/pdf.min.mjs','lib/pdf.worker.min.mjs','lib/d3geo.js','geo/world.json']).catch(()=>{}))).catch(()=>{}))});
+self.addEventListener('install',e=>{self.skipWaiting();e.waitUntil(caches.open(C).then(c=>c.addAll(['./','index.html','app.css?v=205','app.js?v=205','manifest.webmanifest','icons/icon-192.png','img/ic3.webp','img/clockhero.webp','img/butler.webp','fonts/fonts.css']).then(()=>c.addAll(['img/c_c49be66298.webp','img/c_a7436d1635.webp','img/c_caeee9c5b1.webp','img/person_m.webp','img/person_f.webp','lib/pdf.min.mjs','lib/pdf.worker.min.mjs','lib/d3geo.js','geo/world.json']).catch(()=>{}))).catch(()=>{}))});
 self.addEventListener('activate',e=>e.waitUntil(caches.keys().then(k=>Promise.all(k.filter(x=>x!==C&&x!=='butler-books'&&x!=='butler-ics'&&x!=='butler-ocr'&&x!==LIBS&&x!==PV).map(x=>caches.delete(x)))).then(()=>self.clients.claim())));
 offNow();
 self.addEventListener('fetch',e=>{const r=e.request,u=new URL(r.url);
