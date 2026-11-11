@@ -33,7 +33,7 @@ if(!window.bhost){window.bhost={__standalone:1,use:async n=>n==='downloads'?{sav
   try{var tx=d.transaction('kv','readwrite');tx.objectStore('kv').put({ts:it.ts,json:it.json},'S');tx.oncomplete=function(){busy=false;window.__coreOk=it.ts;if(!it.lsOk){try{localStorage.removeItem('concierge.v1')}catch(e){}}pump()};tx.onerror=tx.onabort=function(){busy=false;fail(it);pump()}}catch(e){busy=false;fail(it)}})}
  window.coreSave=function(json,ts,lsOk){next={json:json,ts:ts,lsOk:lsOk};pump()};
 /* Private access while the app is in testing: a phone that already has its data opens as usual; a new visitor needs the access code */
- window.__coreBoot=window.__coreBoot.then(function(){return new Promise(function(go){var ok=false;try{ok=!!localStorage.getItem('concierge.v1')||!!localStorage.getItem('bt-ok')}catch(e){ok=true}
+ window.__coreBoot=window.__coreBoot.then(function(){return new Promise(function(go){var ok=true;/* v219: access code removed at the owner's request */
   if(ok||window.__coreS){try{localStorage.setItem('bt-ok','1')}catch(e){}go();return}
   function show(){var d=document.createElement('div');d.id='btgate';d.innerHTML='<style>#btgate{position:fixed;inset:0;z-index:99999;display:flex;align-items:center;justify-content:center;padding:24px;background:radial-gradient(120% 90% at 50% 30%,#123a28,#06130c);font-family:Georgia,serif;color:#efe3c2}#btgate .b{width:100%;max-width:340px;text-align:center;padding:34px 24px;border-radius:22px;border:1px solid rgba(201,165,94,.55);background:rgba(10,33,22,.9)}#btgate h1{font-weight:400;font-size:30px;letter-spacing:.2em;margin:0 0 6px;color:#f1d78f}#btgate p{margin:0 0 18px;opacity:.75;font-size:15px}#btgate input{width:100%;box-sizing:border-box;padding:14px;border-radius:12px;border:1px solid rgba(201,165,94,.55);background:#06150e;color:#f1e6c8;font-size:18px;text-align:center;outline:none}#btgate button{margin-top:12px;width:100%;padding:14px;border:0;border-radius:12px;background:linear-gradient(180deg,#e6c77a,#b8913a);color:#10261c;font:600 17px Georgia,serif}#btgate .sh{animation:bts .45s}@keyframes bts{25%,75%{transform:translateX(-8px)}50%{transform:translateX(8px)}}</style><div class="b"><h1>BUTLER</h1><p>Private · Privat · Частный доступ</p><input type="password" autocomplete="off" autocapitalize="off" placeholder="•••"><button type="button">→</button></div>';document.body.appendChild(d);
    var i=d.querySelector('input'),b=d.querySelector('.b');function tryIt(){var v=String(i.value||'').trim().toLowerCase();if(!v||!crypto.subtle)return;crypto.subtle.digest('SHA-256',new TextEncoder().encode(v)).then(function(h){var x=Array.from(new Uint8Array(h)).map(function(n){return n.toString(16).padStart(2,'0')}).join('');if(x==='78bc5f9d95110b29ec584baef6b60eba8a2789ef7a1459b8abd7ea7e40ca2611'){try{localStorage.setItem('bt-ok','1')}catch(e){}d.remove();go()}else{b.classList.remove('sh');void b.offsetWidth;b.classList.add('sh');i.select()}})}
@@ -44,8 +44,8 @@ if(!window.bhost){window.bhost={__standalone:1,use:async n=>n==='downloads'?{sav
 </script>
 <title>The Silentium's Butler</title>
 <link rel="stylesheet" href="fonts/fonts.css">
-<link rel="stylesheet" href="app.css?v=218">
+<link rel="stylesheet" href="app.css?v=219">
 
 <div class="app" id="app"><div style="padding:40px 20px;text-align:center;font-family:Georgia,serif;color:#1D2A22;background:#F5EEDF;line-height:1.5"><p style="font-size:28px;margin:0 0 12px">The Silentium’s Butler</p><p>Dies ist nur eine Vorschau der Datei. Das Programm startet hier nicht.</p><p>Это только предпросмотр файла, здесь приложение не запускается. Загрузите файл на app.netlify.com/drop и откройте полученную ссылку в Safari.</p></div></div>
 
-<script src="app.js?v=218"></script>
+<script src="app.js?v=219"></script>
