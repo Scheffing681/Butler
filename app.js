@@ -5588,7 +5588,7 @@ crown:['Корона над названием','Krone über dem Namen','Crown a
 tl:['Вид «Сегодня»','Ansicht „Heute“','“Today” view','Widok „Dziś”','“Bugün” görünümü','Vue « Aujourd’hui »','Vista «Hoy»'],tl0:['Список','Liste','List','Lista','Liste','Liste','Lista'],tl1:['Линия времени','Zeitleiste','Timeline','Oś czasu','Zaman çizelgesi','Chronologie','Línea de tiempo'],
 acc:['Акцентные','Akzent','Accent','Akcent','Vurgu','Accent','Acento'],undo:['Отменить','Rückgängig','Undo','Cofnij','Geri al','Annuler','Deshacer'],
 b_stats:['Сводка дня','Tagesübersicht','Day summary','Podsumowanie dnia','Gün özeti','Résumé du jour','Resumen del día'],b_acts:['Быстрые действия','Schnellaktionen','Quick actions','Szybkie akcje','Hızlı işlemler','Actions rapides','Acciones rápidas'],
-s_today:['Сегодня','Heute','Today','Dziś','Bugün','Aujourd’hui','Hoy'],s_today2:['%n в плане','%n Termine','%n planned','%n w planie','%n plan','%n prévus','%n previstos'],
+s_today:['Календарь','Kalender','Calendar','Kalendarz','Takvim','Calendrier','Calendario'],s_today2:['%n в плане','%n Termine','%n planned','%n w planie','%n plan','%n prévus','%n previstos'],
 s_task:['Задачи','Aufgaben','Tasks','Zadania','Görevler','Tâches','Tareas'],s_task2:['%n открыто','%n offen','%n open','%n otwarte','%n açık','%n ouvertes','%n abiertas'],
 s_fin:['Расходы','Ausgaben','Expenses','Wydatki','Giderler','Dépenses','Gastos'],s_mon:['мес.','Monat','month','mies.','ay','mois','mes'],s_doc:['Документы','Dokumente','Documents','Dokumenty','Belgeler','Documents','Documentos'],s_doc2:['%n в архиве','%n Dateien','%n files','plików: %n','%n dosya','%n fichiers','%n archivos'],
 a_task:['Задача','Aufgabe','Task','Zadanie','Görev','Tâche','Tarea'],a_note:['Заметка','Notiz','Note','Notatka','Not','Note','Nota'],a_event:['Событие','Termin','Event','Wydarzenie','Etkinlik','Événement','Evento'],a_doc:['Документ','Dokument','Document','Dokument','Belge','Document','Documento'],a_photo:['Фото','Foto','Photo','Zdjęcie','Fotoğraf','Photo','Foto'],
@@ -6443,7 +6443,7 @@ const H11FID='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-
 /* ---------- login ---------- */
 Yf=(f=>function(){const src=f.apply(this,arguments);try{const T0=document.createElement('template');T0.innerHTML=src;const lg=T0.content.querySelector('.login.lg9');if(!lg)return src;
  lg.classList.add('h11L');const fm=lg.querySelector('.lg9form'),fld=fm&&fm.querySelector('.lg9f');
- if(fld&&!fm.querySelector('.h11row')){const row=document.createElement('div');row.className='h11row';fld.parentNode.insertBefore(row,fld);row.appendChild(fld);row.insertAdjacentHTML('beforeend',`<button type="button" class="h11fid" data-act="h11fid" aria-label="Face ID">${H11FID}</button>`)}
+ if(fld&&!fm.querySelector('.h11row')){const row=document.createElement('div');row.className='h11row';fld.parentNode.insertBefore(row,fld);row.appendChild(fld);row.insertAdjacentHTML('beforeend',g.br9qcOff?`<button type="button" class="h11fid" data-act="h11fid" aria-label="Face ID">${H11FID}</button>`:`<button type="button" class="h11fid h11qc" data-act="br9qc" aria-label="${i(br9t('qc'))}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3.5H7a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8.5z"/><path d="M14 3.5v5h5M12 11.5v6M9 14.5h6"/></svg></button>`)}
  fm&&fm.querySelectorAll('.lg9alt[data-act="st4face"]').forEach(e=>e.remove());
  const fg=fm&&fm.querySelector('.lg9fg'),lang=lg.querySelector('.lg9lang');if(fg&&lang){const sub=document.createElement('div');sub.className='h11sub';fg.parentNode.insertBefore(sub,fg);sub.appendChild(fg);sub.appendChild(lang)}
  return T0.innerHTML}catch(e){return src}})(Yf);
@@ -6558,6 +6558,10 @@ html.g9short .login.h11L .br9clk{margin:auto 0!important}
 .login.h11L .br9clk .cf9btn .cf9ck,.login.h11L .br9clk .cf9btn .br9ck,.login.h11L .br9clk>.br9ck{width:min(62vw,240px,30vh)!important;height:min(62vw,240px,30vh)!important}
 .login.h11L .lg9mid{margin-top:16px!important}
 .login.h11L .br9clk{padding-top:12px}
+/* quick drop: the Save button reads clearly in every colour */
+.br9sheet .br9sv{color:var(--bg,#15120b)}
+/* the old quick-drop tile under the clock is now the button next to the password */
+.login.h11L .br9qc{display:none}
 /* swipe-back arrow */
 .sw223{position:fixed;left:0;top:50%;z-index:100000;width:40px;height:40px;border-radius:50%;display:grid;place-items:center;background:var(--surface,#1c1c1e);color:var(--ink,#fff);border:1px solid var(--line,rgba(255,255,255,.2));box-shadow:0 6px 18px rgba(0,0,0,.25);transform:translate(-40px,-50%);opacity:0;transition:opacity .15s,background .15s;pointer-events:none}
 .sw223 svg{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
