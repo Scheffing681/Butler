@@ -7599,6 +7599,6 @@ try{
 .dzacts .dzbig.sc247{border-color:color-mix(in srgb,var(--gold,#C99A3E) 55%,var(--line,rgba(128,128,128,.3)))}
 .bd8ac .rw{grid-template-columns:none!important;grid-auto-flow:column;grid-auto-columns:minmax(0,1fr)}
 `;document.head.appendChild(st)}catch(e){}
-/* v248: «Готовые комплекты» are put away — the code stays in the app; g.kitsOn=1 brings them back */
-try{const st=document.createElement('style');st.textContent=`html:not(.kitson) .st40ch,html:not(.kitson) .st40kg,html:not(.kitson) .st39ks,html:not(.kitson) p.dsh:has(+.st40ch),html:not(.kitson) p.dsh:has(+.st39ks){display:none!important}`;document.head.appendChild(st);document.documentElement.classList.toggle('kitson',!!g.kitsOn)}catch(e){}
+/* v248–249: «Готовые комплекты», the big preview and the «Фирменный» card are put away — the code stays in the app; g.kitsOn=1 brings them back */
+try{const st=document.createElement('style');st.textContent=`html:not(.kitson) .st40ch,html:not(.kitson) .st40kg,html:not(.kitson) .st39ks,html:not(.kitson) p.dsh:has(+.st40ch),html:not(.kitson) p.dsh:has(+.st39ks),html:not(.kitson) .st39 .st39pv,html:not(.kitson) .st41feat{display:none!important}`;document.head.appendChild(st);document.documentElement.classList.toggle('kitson',!!g.kitsOn)}catch(e){}
 v(),Sq()})();
