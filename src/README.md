@@ -15,7 +15,7 @@
 | `clocks/` | thirty more clocks; day-night map, sky and time, background, Galaxy, classic kits; light kits; clock faces |
 | `seal/` | seal and signature |
 | `today/` | «?» tour, Today, search across everything, Butler commands |
-| `notes/` | notes and quick input |
+| `notes/` | notes and quick input; back from «Покупки» |
 | `affairs/` | manager of affairs: repeat, steps, promises, weekly review |
 | `calendar/` | personal calendar: faiths, holidays, sky, setup |
 | `home/` | own bottom bar and layout, home on one screen, builder and templates, folded templates |
@@ -26,6 +26,8 @@
 | `saved/` | saved entries stay visible |
 | `scanner/` | the document scanner |
 | `kits/` | ready-made style sets (hidden) |
+| `travel/` | real Earth colours on the travel globe and map |
+| `books/` | «Зеркало себя»: free writing, analysis only on request, portrait and plan |
 | `backup/` | data protection, safety copy, restore the latest copy |
 
 ## One connection point (Hooks)
