@@ -27,3 +27,11 @@
 | `scanner/` | the document scanner |
 | `kits/` | ready-made style sets (hidden) |
 | `backup/` | data protection, safety copy, restore the latest copy |
+
+## One connection point (Hooks)
+New code does not wrap app functions any more. It plugs in through `Hooks` (`src/modules/hooks/registry.js`, installed last by `hooks/install.js`):
+- `Hooks.on('screen'|'profile'|'signin', html=>html)` — change screen HTML
+- `Hooks.on('route', r=>false)` — stop/redirect a route; `Hooks.on('render'|'save'|'file', ...)`
+- `Hooks.act('name', fn)` — a button action (`data-act`); `Hooks.css('id', css)` — styles
+Errors inside hooks never break the app; they are kept in `Hooks.errors` (localStorage `bh-errors`).
+The robot fails if the number of old wrapper layers grows (`tests/wrappers-baseline.txt`).

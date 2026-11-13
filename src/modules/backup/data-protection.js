@@ -32,22 +32,22 @@ try{
   <p class="st53n">${i(p53('inc'))}</p>
   <div class="st53b"><button type="button" class="dcadd gold" data-act="st53bk">${i(p53('mk'))}</button><button type="button" class="btn" data-act="bkrestore">${i(p53('rs'))}</button></div>
   ${pre53?`<button type="button" class="trlink st53u" data-act="st53undo">${i(p53('undo',{d:date53(pre53.ts)}))}</button>`:''}</section>`};
- It=(f=>function(){const a=f.apply(this,arguments);try{const t='<p class="appver">',n=a.indexOf(t);if(n<0||a.includes('class="card st53"'))return a;return a.slice(0,n)+card53()+a.slice(n)}catch{return a}})(It);
- L.st53bk=()=>{try{hh()}catch{}};
- L.st53undo=async()=>{if(!confirm(p53('undoQ')))return;const v=await kv53('readonly',s=>s.get('B'));if(!v||!v.json)return;let o=null;try{o=JSON.parse(v.json)}catch{}if(!o)return;Object.keys(g).forEach(k=>delete g[k]);Object.assign(g,o);$();await kv53('readwrite',s=>s.delete('B'));pre53=null;T(p53('back'));setTimeout(()=>location.reload(),600)};
+ Hooks.on('profile',a=>{const t='<p class="appver">',n=a.indexOf(t);if(n<0||a.includes('class="card st53"'))return;return a.slice(0,n)+card53()+a.slice(n)});
+ Hooks.act('st53bk',()=>{try{hh()}catch(e){Hooks.err('backup',e)}});
+ Hooks.act('st53undo',async()=>{if(!confirm(p53('undoQ')))return;const v=await kv53('readonly',s=>s.get('B'));if(!v||!v.json)return;let o=null;try{o=JSON.parse(v.json)}catch{}if(!o)return;Object.keys(g).forEach(k=>delete g[k]);Object.assign(g,o);$();await kv53('readwrite',s=>s.delete('B'));pre53=null;T(p53('back'));setTimeout(()=>location.reload(),600)});
  /* before «Восстановить» does anything, the data on this phone is put aside; only then the restore runs */
  document.addEventListener('click',async e=>{const b=e.target.closest&&e.target.closest('.dtsheet [data-x="go"]');if(!b||b.__p53)return;const sh=b.closest('.dtsheet');const h=sh&&sh.querySelector('h2,h3,.dttitle,.dthd');const ttl=sh?sh.innerText:'';if(!ttl.includes(C('bkRestT')))return;
   e.preventDefault();e.stopImmediatePropagation();b.disabled=!0;try{await kv53('readwrite',s=>s.put({ts:Date.now(),json:JSON.stringify(g)},'B'))}catch{}try{sessionStorage.setItem('p53safe',String(+g.bkLast||1))}catch{}b.disabled=!1;b.__p53=1;b.click()},!0);
  try{const k=sessionStorage.getItem('p53safe');if(k){sessionStorage.removeItem('p53safe');/* the date of the newest copy survives the restore */const was=+k||0;if(was>(+g.bkLast||0)){g.bkLast=was;$()}setTimeout(()=>T(p53('safe')),2600)}}catch{}
  /* the scanner window closes (and the camera stops) when the app moves to another screen */
  const sc53=()=>{document.querySelectorAll('.sc9').forEach(ov=>{try{ov.querySelectorAll('video').forEach(vd=>{const s=vd.srcObject;s&&s.getTracks&&s.getTracks().forEach(t=>t.stop());vd.srcObject=null})}catch{}ov.remove()});document.documentElement.classList.remove('sc9on')};
- R=(f=>function(){try{if(document.querySelector('.sc9'))sc53()}catch{}return f.apply(this,arguments)})(R);
+ Hooks.on('route',()=>{if(document.querySelector('.sc9'))sc53()});
  Promise.all([load53(),chk53()]).then(()=>{try{if(m.route==='profile')v()}catch{}});
- const st=document.createElement('style');st.textContent=`
+ Hooks.css('backup-card',`
 .card.st53{display:flex;flex-direction:column;gap:10px;margin:14px 0}.st53 h3{margin:0;font-family:var(--display);font-weight:500;font-size:21px}
 .st53r{display:flex;justify-content:space-between;align-items:baseline;gap:12px;font-size:15px}.st53r span{color:var(--muted);flex:none}.st53r b{font-weight:500;text-align:right}.st53r b.ok{color:var(--good,#3f9d5a)}.st53r b.wn{color:var(--warn,#c98a2e)}
 .st53n{margin:0;font-size:13px;color:var(--muted);line-height:1.4}.st53b{display:flex;flex-direction:column;gap:8px}.st53b .btn{width:100%}.st53u{align-self:flex-start;text-align:left}
-`;document.head.appendChild(st);
+`);
 }catch(e){}
 /* v257: «Восстановить из копии» shows the latest copy right away. Every copy saved to Files is also kept on this phone (the newest one only);
    the iPhone does not let an app look into Files by itself, so a copy from another place is still picked with «Выбрать файл» */
@@ -62,14 +62,14 @@ try{
  const db57=()=>new Promise(res=>{try{const r=indexedDB.open('silentium-core',1);r.onupgradeneeded=()=>r.result.createObjectStore('kv');r.onsuccess=()=>res(r.result);r.onerror=()=>res(null);r.onblocked=()=>res(null)}catch{res(null)}});
  const kv57=async(mode,fn)=>{const d=await db57();if(!d)return null;return new Promise(res=>{try{const tx=d.transaction('kv',mode),r=fn(tx.objectStore('kv'));tx.oncomplete=()=>res(r&&r.result);tx.onerror=tx.onabort=()=>res(null)}catch{res(null)}})};
  /* every copy that really reached Files is kept here as well */
- hl=(f=>async function(a,data){const ok=await f.apply(this,arguments);try{if(ok!==!1&&/^silentium-.*\.json$/.test(a)&&typeof data==='string'){let enc=!1;try{enc=!!JSON.parse(data)['silentium-enc']}catch{}await kv57('readwrite',s=>s.put({ts:Date.now(),name:a,enc,size:data.length,data},'K'))}}catch{}return ok})(hl);
+ Hooks.on('file',(ok,a,data)=>{if(ok!==!1&&/^silentium-.*\.json$/.test(a)&&typeof data==='string'){let enc=!1;try{enc=!!JSON.parse(data)['silentium-enc']}catch{}kv57('readwrite',s=>s.put({ts:Date.now(),name:a,enc,size:data.length,data},'K'))}});
  /* run the app's own restore with a file it did not have to ask for */
  const run57=file=>{const orig=document.createElement;document.createElement=function(t){const el=orig.apply(document,arguments);if(String(t).toLowerCase()==='input'){document.createElement=orig;el.click=()=>{try{Object.defineProperty(el,'files',{value:[file],configurable:!0})}catch{}el.onchange&&el.onchange()}}return el};try{Oz()}finally{document.createElement=orig}};
  const when57=ts=>{try{return new Date(ts).toLocaleString(he(),{day:'numeric',month:'long',year:'numeric',hour:'2-digit',minute:'2-digit'})}catch{return''}};
- L.bkrestore=async function(){const k=await kv57('readonly',s=>s.get('K'));if(!k||!k.data){Oz();return}
+ Hooks.act('bkrestore',async function(){const k=await kv57('readonly',s=>s.get('K'));if(!k||!k.data){Oz();return}
   const mb=k.size>=1048576?(k.size/1048576).toFixed(1):(Math.max(1,Math.round(k.size/1024))+' K').replace(' K',' KB').replace(/ KB$/,'\u00a0KB');
   H(s57('t'),`<div class="r57c"><small>${i(s57('here'))}</small><b>${i(when57(k.ts))}</b><span>${i(k.name)} · ${String(mb).includes('KB')?mb:mb+' MB'}${k.enc?' · 🔒 '+i(s57('lock')):''}</span><button type="button" class="dcadd gold" data-x="in">${i(s57('go'))}</button></div><button type="button" class="btn r57f" data-x="file">${i(s57('file'))}</button><p class="fdsmall">${i(s57('fileS'))}</p>`,sh=>{
    sh.querySelector('[data-x=in]').onclick=()=>{sh.remove();run57(new File([k.data],k.name,{type:'application/json'}))};
-   sh.querySelector('[data-x=file]').onclick=()=>{sh.remove();Oz()}})};
- const st=document.createElement('style');st.textContent=`.r57c{display:flex;flex-direction:column;gap:6px;padding:14px;border:1px solid var(--line);border-radius:16px;background:var(--surface);margin-bottom:12px}.r57c small{color:var(--muted);font-size:13px}.r57c b{font-size:18px;font-weight:600}.r57c span{color:var(--muted);font-size:13.5px;margin-bottom:6px;word-break:break-all}.r57f{width:100%}`;document.head.appendChild(st);
+   sh.querySelector('[data-x=file]').onclick=()=>{sh.remove();Oz()}})},{replace:!0});
+ Hooks.css('backup-restore',`.r57c{display:flex;flex-direction:column;gap:6px;padding:14px;border:1px solid var(--line);border-radius:16px;background:var(--surface);margin-bottom:12px}.r57c small{color:var(--muted);font-size:13px}.r57c b{font-size:18px;font-weight:600}.r57c span{color:var(--muted);font-size:13.5px;margin-bottom:6px;word-break:break-all}.r57f{width:100%}`);
 }catch(e){}
