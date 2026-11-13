@@ -18,7 +18,16 @@
    cloud sync, AI and connectors stay off (they return null exactly as before). */
 if(!window.bhost){window.bhost={__standalone:1,use:async n=>n==='downloads'?{save:async({filename,data})=>{
   const ty=/\.json$/i.test(filename)?'application/json':/\.pdf$/i.test(filename)?'application/pdf':/\.(vcf)$/i.test(filename)?'text/vcard':/\.(html?)$/i.test(filename)?'text/html':/\.(txt|md)$/i.test(filename)?'text/plain':'application/octet-stream';
-  const b=data instanceof Blob?data:new Blob([data],{type:ty}),u=URL.createObjectURL(b),a=document.createElement('a');
+  const b=data instanceof Blob?data:new Blob([data],{type:ty});
+  /* v256: a Butler backup goes through the share sheet («Sichern in Dateien»), so the iPhone really keeps the file; cancelling counts as not saved */
+  if(/^silentium-.*\.json$/i.test(filename)&&navigator.canShare&&navigator.share){try{const f=new File([b],filename,{type:'application/json'});if(navigator.canShare({files:[f]})){try{await navigator.share({files:[f]});return}catch(e){if(e&&e.name==='AbortError'){const er=new Error('declined');er.code='declined';throw er}
+    /* the iPhone wants a fresh tap before sharing (encryption took a moment): one more button */
+    if(e&&e.name==='NotAllowedError'){const ru=/^ru/.test(document.documentElement.lang||navigator.language),de=/^de/.test(document.documentElement.lang||navigator.language);
+     const r=await new Promise(res=>{const d=document.createElement('div');d.style.cssText='position:fixed;inset:0;z-index:99998;display:flex;align-items:flex-end;justify-content:center;background:rgba(0,0,0,.45);padding:16px';
+      d.innerHTML='<div style="width:100%;max-width:420px;background:#14231b;color:#f1e6c8;border:1px solid rgba(201,165,94,.6);border-radius:20px;padding:20px;font:16px Georgia,serif;text-align:center"><p style="margin:0 0 14px">'+(ru?'Копия готова. Нажмите, чтобы сохранить её в «Файлы».':de?'Die Sicherung ist fertig. Tippen Sie, um sie in «Dateien» zu sichern.':'The copy is ready. Tap to save it to Files.')+'</p><button type="button" data-k="go" style="width:100%;padding:14px;border:0;border-radius:14px;background:linear-gradient(180deg,#e6c77a,#b8913a);color:#10261c;font:600 17px Georgia,serif">'+(ru?'Сохранить копию':de?'Sicherung speichern':'Save the copy')+'</button><button type="button" data-k="no" style="margin-top:10px;background:none;border:0;color:#cbbd97;font:15px Georgia,serif">'+(ru?'Отмена':de?'Abbrechen':'Cancel')+'</button></div>';
+      document.body.appendChild(d);d.querySelector('[data-k=go]').onclick=()=>{navigator.share({files:[f]}).then(()=>{d.remove();res('ok')}).catch(x=>{d.remove();res(x&&x.name==='AbortError'?'cancel':'fail')})};d.querySelector('[data-k=no]').onclick=()=>{d.remove();res('cancel')}});
+     if(r==='ok')return;if(r==='cancel'){const er=new Error('declined');er.code='declined';throw er}}}}}catch(e){if(e&&e.code==='declined')throw e}}
+  const u=URL.createObjectURL(b),a=document.createElement('a');
   a.href=u;a.download=filename;a.rel='noopener';document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(u);a.remove()},5000)}}:null}}
 </script>
 <script>
@@ -44,8 +53,8 @@ if(!window.bhost){window.bhost={__standalone:1,use:async n=>n==='downloads'?{sav
 </script>
 <title>The Silentium's Butler</title>
 <link rel="stylesheet" href="fonts/fonts.css">
-<link rel="stylesheet" href="app.css?v=255">
+<link rel="stylesheet" href="app.css?v=256">
 
 <div class="app" id="app"><div style="padding:40px 20px;text-align:center;font-family:Georgia,serif;color:#1D2A22;background:#F5EEDF;line-height:1.5"><p style="font-size:28px;margin:0 0 12px">The Silentium’s Butler</p><p>Dies ist nur eine Vorschau der Datei. Das Programm startet hier nicht.</p><p>Это только предпросмотр файла, здесь приложение не запускается. Загрузите файл на app.netlify.com/drop и откройте полученную ссылку в Safari.</p></div></div>
 
-<script src="app.js?v=255"></script>
+<script src="app.js?v=256"></script>
