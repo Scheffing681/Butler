@@ -22,7 +22,7 @@
 | Brand, living sign | 20, 21 |
 | iPhone screen edges, polish, back | 23, 27, 30 |
 | Saved entries visible | 25 |
-| Document scanner | 31, 32, 33, 34, 35, 37 |
+| Document scanner | 31-scanner.js (merged) |
 | Ready-made style sets (hidden) | 36, 38 |
 | Backup and data protection | 41, 44 |
 

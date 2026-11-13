@@ -1,3 +1,243 @@
+/* ===== Document scanner — one module (was updates v238, v239, v240, v241, v243, v244, v247) =====
+   camera → corners → straighten and clean → pages → text, PDF, the card of what the butler understood; the scanner's home page;
+   the scanner on the sign-in screen. Sections below keep their original update notes. */
+/* v238: document scanner — finds the sheet, straightens it, flattens bent edges, removes crease shadows; everything stays on the phone */
+try{
+const SC={t:['Сканер','Scanner','Scanner','Skaner','Tarayıcı','Scanner','Escáner'],
+ look:['Наведите камеру на лист','Kamera auf das Blatt richten','Point the camera at the sheet','Skieruj aparat na kartkę','Kamerayı sayfaya tutun','Visez la feuille','Apunta a la hoja'],
+ found:['Лист найден · держите телефон ровно…','Blatt erkannt · Telefon ruhig halten …','Sheet found · hold still…','Kartka znaleziona · trzymaj nieruchomo…','Sayfa bulundu · sabit tutun…','Feuille trouvée · ne bougez pas…','Hoja encontrada · no te muevas…'],
+ auto:['Авто','Auto','Auto','Auto','Oto','Auto','Auto'],
+ edges:['Края листа','Blattränder','Sheet edges','Krawędzie','Sayfa kenarları','Bords','Bordes'],
+ drag:['Потяните угол, если рамка легла неточно','Ecke ziehen, falls der Rahmen nicht passt','Drag a corner if the frame is off','Przeciągnij róg, jeśli ramka nie pasuje','Çerçeve kaymışsa köşeyi sürükleyin','Tirez un coin si le cadre est décalé','Arrastra una esquina si el marco no encaja'],
+ flat:['Выровнять →','Begradigen →','Straighten →','Wyprostuj →','Düzelt →','Redresser →','Enderezar →'],
+ done:['Готово','Fertig','Done','Gotowe','Hazır','Terminé','Listo'],
+ was:['Было','Vorher','Before','Przed','Önce','Avant','Antes'],now:['Стало','Nachher','After','Po','Sonra','Après','Después'],
+ note:['Выровнено · изгибы и тени складок убраны','Begradigt · Wölbungen und Knickschatten entfernt','Straightened · bends and crease shadows removed','Wyprostowano · zagięcia i cienie usunięte','Düzeltildi · kıvrım ve gölgeler kaldırıldı','Redressé · plis et ombres retirés','Enderezado · curvas y sombras eliminadas'],
+ doc:['Документ','Dokument','Document','Dokument','Belge','Document','Documento'],col:['Цвет','Farbe','Colour','Kolor','Renk','Couleur','Color'],orig:['Оригинал','Original','Original','Oryginał','Orijinal','Original','Original'],
+ save:['Сохранить','Speichern','Save','Zapisz','Kaydet','Enregistrer','Guardar'],
+ pages:['%n стр.','%n S.','%n p.','%n str.','%n sf.','%n p.','%n pág.'],
+ priv:['🔒 Обработка только на этом телефоне','🔒 Verarbeitung nur auf diesem Telefon','🔒 Processed only on this phone','🔒 Przetwarzanie tylko na tym telefonie','🔒 Yalnızca bu telefonda işlenir','🔒 Traité uniquement sur ce téléphone','🔒 Procesado solo en este teléfono'],
+ noCam:['Камера недоступна. Разрешите камеру для приложения в настройках iPhone — или снимите обычной камерой.','Kamera nicht verfügbar. Kamera in den iPhone-Einstellungen erlauben – oder normale Kamera nutzen.','Camera unavailable. Allow the camera in iPhone settings — or use the normal camera.','Aparat niedostępny. Zezwól w ustawieniach — lub użyj zwykłego aparatu.','Kamera kullanılamıyor. Ayarlardan izin verin — ya da normal kamerayı kullanın.','Caméra indisponible. Autorisez-la dans les réglages — ou utilisez l’appareil photo normal.','Cámara no disponible. Permítela en ajustes — o usa la cámara normal.'],
+ native:['Обычная камера','Normale Kamera','Normal camera','Zwykły aparat','Normal kamera','Appareil normal','Cámara normal'],
+ gal:['Из галереи','Aus Fotos','From photos','Z galerii','Galeriden','Depuis Photos','Desde fotos'],
+ work:['Выравниваю…','Wird begradigt …','Straightening…','Prostuję…','Düzeltiliyor…','Redressement…','Enderezando…'],
+ retake:['Переснять','Neu aufnehmen','Retake','Ponów','Yeniden çek','Reprendre','Repetir'],
+ rot:['Повернуть','Drehen','Rotate','Obróć','Döndür','Pivoter','Girar'],
+ add:['Ещё страница','Weitere Seite','Add page','Kolejna strona','Sayfa ekle','Ajouter une page','Otra página'],
+ fix:['Края','Ränder','Edges','Krawędzie','Kenarlar','Bords','Bordes'],
+ nat:['Камера iPhone','iPhone-Kamera','iPhone camera','Aparat iPhone','iPhone kamerası','Appareil iPhone','Cámara iPhone'],
+ lowQ:['Текст читается плохо — для лучшего результата снимайте «Камерой iPhone», ровно и при хорошем свете.','Text schwer lesbar – besser mit der „iPhone-Kamera“, gerade und bei gutem Licht aufnehmen.','The text is hard to read — use “iPhone camera”, straight and in good light, for a better result.','Tekst słabo czytelny — użyj „Aparatu iPhone” przy dobrym świetle.','Metin zor okunuyor — “iPhone kamerası” ile iyi ışıkta çekin.','Texte peu lisible — utilisez « Appareil iPhone », bien droit et bien éclairé.','Texto poco legible — usa «Cámara iPhone», recto y con buena luz.'],
+ smOff:['Лист уже ровный — разглаживать нечего','Blatt ist schon glatt','The sheet is already flat','Kartka jest już równa','Sayfa zaten düz','La feuille est déjà plane','La hoja ya está lisa'],
+ files:['Файлы','Dateien','Files','Pliki','Dosyalar','Fichiers','Archivos'],
+ next:['Дальше ›','Weiter ›','Next ›','Dalej ›','İleri ›','Suivant ›','Siguiente ›'],
+ cardT:['Что это за документ','Was ist das?','What is it','Co to jest','Bu ne','Qu’est-ce que c’est','Qué es'],
+ und:['Батлер понял','Der Butler hat erkannt','The butler understood','Kamerdyner rozpoznał','Uşak anladı','Le majordome a compris','El mayordomo entendió'],
+ undQ:['Батлер не уверен — проверьте','Nicht sicher – bitte prüfen','Not sure — please check','Nie jestem pewien — sprawdź','Emin değil — kontrol edin','Pas sûr — vérifiez','No está seguro — revisa'],
+ fTitle:['Название','Name','Name','Nazwa','Ad','Nom','Nombre'],fFolder:['Папка','Ordner','Folder','Folder','Klasör','Dossier','Carpeta'],fType:['Вид','Art','Type','Rodzaj','Tür','Type','Tipo'],
+ refund:['Возврат','Erstattung','Refund','Zwrot','İade','Remboursement','Devolución'],pay:['К оплате','Zu zahlen','To pay','Do zapłaty','Ödenecek','À payer','A pagar'],
+ due:['Срок','Frist','Deadline','Termin','Son tarih','Échéance','Plazo'],duePay:['Оплатить до','Zahlbar bis','Pay by','Zapłać do','Son ödeme','Payer avant','Pagar antes de'],dueObj:['≈ Срок обжалования','≈ Einspruchsfrist','≈ Objection deadline','≈ Termin odwołania','≈ İtiraz süresi','≈ Délai de recours','≈ Plazo de recurso'],
+ dueObjS:['месяц после получения письма (≈ дата письма + 4 дня) — проверьте по письму','ein Monat ab Bekanntgabe (≈ Briefdatum + 4 Tage) – bitte im Brief prüfen','one month after receipt (≈ letter date + 4 days) — check the letter','miesiąc od doręczenia — sprawdź w piśmie','tebliğden bir ay sonra — mektuptan kontrol edin','un mois après réception — vérifiez la lettre','un mes tras la recepción — revisa la carta'],
+ remind:['Напомнить','Erinnern','Remind me','Przypomnij','Hatırlat','Me rappeler','Recordarme'],remindS:['задача в «Мой день» на этот срок','Aufgabe in „Mein Tag“ zu dieser Frist','a task in “My day” for this date','zadanie w „Mój dzień”','“Günüm”de görev','une tâche dans « Ma journée »','una tarea en «Mi día»'],
+ cardChk:['Всё заполнено по тексту письма — проверьте цифры и даты перед сохранением.','Alles aus dem Brieftext übernommen – Zahlen und Daten vor dem Speichern prüfen.','Filled from the letter’s text — check numbers and dates before saving.','Wypełniono z tekstu — sprawdź liczby i daty.','Metinden dolduruldu — sayıları ve tarihleri kontrol edin.','Rempli d’après le texte — vérifiez chiffres et dates.','Rellenado del texto — revisa cifras y fechas.'],
+ saveOne:['Сохранить этот','Diesen speichern','Save this one','Zapisz ten','Bunu kaydet','Enregistrer celui-ci','Guardar este'],
+ savedTo:['Сохранено в «%f» ✓','Gespeichert in „%f“ ✓','Saved to “%f” ✓','Zapisano w „%f” ✓','“%f” klasörüne kaydedildi ✓','Enregistré dans « %f » ✓','Guardado en «%f» ✓'],
+ taskObj:['Обжалование: проверить срок','Einspruch: Frist prüfen','Objection: check the deadline','Odwołanie: sprawdź termin','İtiraz: süreyi kontrol et','Recours : vérifier le délai','Recurso: revisar el plazo'],taskPay:['Оплатить','Bezahlen','Pay','Zapłacić','Öde','Payer','Pagar'],taskDue:['Срок','Frist','Deadline','Termin','Son tarih','Échéance','Plazo'],
+ inbox:['Входящие','Eingang','Inbox','Skrzynka','Gelen','Arrivées','Entrada'],pp:['стр.','S.','p.','str.','sf.','p.','pág.'],check:['проверьте','prüfen','check','sprawdź','kontrol','vérifier','revisar'],
+ saved:['сохранено','gespeichert','saved','zapisano','kaydedildi','enregistré','guardado'],waitT:['в очереди','wartet','waiting','czeka','sırada','en attente','en cola'],
+ impErr:['Файл не удалось открыть','Datei konnte nicht geöffnet werden','The file could not be opened','Nie udało się otworzyć pliku','Dosya açılamadı','Impossible d’ouvrir le fichier','No se pudo abrir el archivo'],
+ saveAll:['Сохранить все (%n)','Alle speichern (%n)','Save all (%n)','Zapisz wszystkie (%n)','Hepsini kaydet (%n)','Tout enregistrer (%n)','Guardar todos (%n)'],
+ savedN:['Сохранено документов: %n ✓','Dokumente gespeichert: %n ✓','Documents saved: %n ✓','Zapisano dokumentów: %n ✓','Kaydedilen belge: %n ✓','Documents enregistrés : %n ✓','Documentos guardados: %n ✓'],
+ k_doc:['Документ','Dokument','Document','Dokument','Belge','Document','Documento'],k_book:['Книга','Buch','Book','Książka','Kitap','Livre','Libro'],k_id:['Удостоверение','Ausweis','ID card','Dowód','Kimlik','Pièce d’identité','Documento ID'],k_bcard:['Визитка','Visitenkarte','Business card','Wizytówka','Kartvizit','Carte de visite','Tarjeta'],k_board:['Доска','Tafel','Board','Tablica','Tahta','Tableau','Pizarra'],
+ kh_doc:['письма, договоры','Briefe, Verträge','letters, contracts','listy, umowy','mektuplar, sözleşmeler','lettres, contrats','cartas, contratos'],kh_book:['разворот станет двумя страницами','Doppelseite wird zu zwei Seiten','a spread becomes two pages','rozkładówka → dwie strony','çift sayfa → iki sayfa','une double page → deux pages','una doble página → dos páginas'],
+ kh_id:['сначала лицевая сторона','zuerst die Vorderseite','front side first','najpierw przód','önce ön yüz','d’abord le recto','primero el anverso'],kh_bcard:['сразу в контакты','direkt in die Kontakte','straight to contacts','prosto do kontaktów','doğrudan kişilere','directement dans les contacts','directo a contactos'],kh_board:['доска или записка','Tafel oder Notiz','whiteboard or note','tablica lub notatka','tahta veya not','tableau ou note','pizarra o nota'],
+ idBack:['Теперь обратная сторона','Jetzt die Rückseite','Now the back side','Teraz tył','Şimdi arka yüz','Maintenant le verso','Ahora el reverso'],
+ erase:['Ластик','Radierer','Eraser','Gumka','Silgi','Gomme','Borrador'],eraseH:['Проведите по пятну, пометке или пальцу на краю — станет белым. ↶ — отменить.','Über Fleck, Notiz oder Finger am Rand wischen – wird weiß. ↶ – rückgängig.','Rub over a stain, mark or finger at the edge — it turns white. ↶ — undo.','Przeciągnij po plamie — zrobi się biało. ↶ — cofnij.','Lekenin üzerinden geçin — beyaz olur. ↶ — geri al.','Passez sur la tache — elle devient blanche. ↶ — annuler.','Pasa sobre la mancha — queda blanca. ↶ — deshacer.'],
+ sign:['Подпись','Unterschrift','Signature','Podpis','İmza','Signature','Firma'],signNew:['Новая подпись','Neue Unterschrift','New signature','Nowy podpis','Yeni imza','Nouvelle signature','Nueva firma'],
+ signH:['Распишитесь пальцем. Подпись хранится только на этом телефоне.','Mit dem Finger unterschreiben. Die Unterschrift bleibt nur auf diesem Telefon.','Sign with your finger. The signature stays on this phone only.','Podpisz się palcem. Podpis zostaje tylko na tym telefonie.','Parmağınızla imzalayın. İmza yalnızca bu telefonda kalır.','Signez du doigt. La signature reste sur ce téléphone.','Firma con el dedo. La firma queda solo en este teléfono.'],
+ signP:['Коснитесь места, где нужна подпись · тяните, чтобы сдвинуть','Tippen, wo die Unterschrift hin soll · ziehen zum Verschieben','Tap where the signature goes · drag to move','Dotknij miejsca podpisu · przeciągnij, aby przesunąć','İmzanın yerine dokunun · taşımak için sürükleyin','Touchez l’endroit de la signature · glissez pour déplacer','Toca donde va la firma · arrastra para mover'],
+ pdfN:['Обычный','Normal','Normal','Zwykły','Normal','Normal','Normal'],pdfNs:['лучшее качество, для печати','beste Qualität, zum Drucken','best quality, for printing','najlepsza jakość, do druku','en iyi kalite, baskı için','meilleure qualité, impression','mejor calidad, para imprimir'],
+ pdfS:['Сжатый для почты','Klein für E-Mail','Small for e-mail','Mały do e-maila','E-posta için küçük','Léger pour e-mail','Ligero para correo'],pdfSs:['меньше размер, текст читается','kleiner, Text bleibt lesbar','smaller, text stays readable','mniejszy, tekst czytelny','daha küçük, metin okunur','plus petit, texte lisible','más pequeño, texto legible'],
+ cancel:['Отмена','Abbrechen','Cancel','Anuluj','İptal','Annuler','Cancelar'],
+ cFirst:['Имя','Vorname','First name','Imię','Ad','Prénom','Nombre'],cLast:['Фамилия','Nachname','Last name','Nazwisko','Soyad','Nom','Apellido'],cCo:['Фирма','Firma','Company','Firma','Şirket','Entreprise','Empresa'],cRole:['Должность','Position','Position','Stanowisko','Pozisyon','Fonction','Cargo'],
+ cPh:['Телефон','Telefon','Phone','Telefon','Telefon','Téléphone','Teléfono'],cPh2:['Телефон 2','Telefon 2','Phone 2','Telefon 2','Telefon 2','Téléphone 2','Teléfono 2'],cMail:['E-mail','E-Mail','E-mail','E-mail','E-posta','E-mail','Correo'],cWeb:['Сайт','Website','Website','Strona','Web sitesi','Site','Web'],cAddr:['Адрес','Adresse','Address','Adres','Adres','Adresse','Dirección'],
+ cChk:['Прочитано с визитки — проверьте имя и номера.','Von der Karte gelesen – Name und Nummern prüfen.','Read from the card — check the name and numbers.','Odczytano — sprawdź imię i numery.','Karttan okundu — ad ve numaraları kontrol edin.','Lu sur la carte — vérifiez nom et numéros.','Leído de la tarjeta — revisa nombre y números.'],
+ cVcf:['Отправить как контакт (vCard)','Als Kontakt teilen (vCard)','Share as contact (vCard)','Udostępnij jako kontakt','Kişi olarak paylaş','Partager comme contact','Compartir como contacto'],cSave:['Сохранить в «Люди»','In „Menschen“ speichern','Save to “People”','Zapisz w „Ludzie”','“Kişiler”e kaydet','Enregistrer dans « Personnes »','Guardar en «Personas»'],
+ cOk:['Контакт сохранён ✓','Kontakt gespeichert ✓','Contact saved ✓','Zapisano kontakt ✓','Kişi kaydedildi ✓','Contact enregistré ✓','Contacto guardado ✓'],cNone:['Не найдено ни имени, ни фирмы — впишите хотя бы одно','Weder Name noch Firma erkannt – bitte eintragen','No name or company found — please enter one','Nie znaleziono imienia ani firmy','Ad veya şirket bulunamadı','Ni nom ni entreprise trouvés','No se encontró nombre ni empresa'],
+ hShot:['Снять документ','Dokument aufnehmen','Scan a document','Zeskanuj dokument','Belge tara','Numériser','Escanear'],hShotS:['камера сама найдёт лист','die Kamera findet das Blatt','the camera finds the sheet','aparat sam znajdzie kartkę','kamera sayfayı bulur','l’appareil trouve la feuille','la cámara encuentra la hoja'],
+ hFind:['Найти в тексте всех документов','In allen Dokumenten suchen','Search the text of all documents','Szukaj w tekście dokumentów','Tüm belgelerde ara','Chercher dans tous les documents','Buscar en todos los documentos'],
+ hRecent:['Последние','Zuletzt','Recent','Ostatnie','Son','Récents','Recientes'],hFound:['Найдено','Gefunden','Found','Znaleziono','Bulunan','Trouvé','Encontrado'],
+ hEmpty:['Здесь появятся ваши сканы','Hier erscheinen Ihre Scans','Your scans will appear here','Tu pojawią się skany','Taramalarınız burada görünecek','Vos scans apparaîtront ici','Aquí aparecerán tus escaneos'],noRes:['Ничего не найдено','Nichts gefunden','Nothing found','Nic nie znaleziono','Bulunamadı','Rien trouvé','Nada encontrado'],
+ lockOk:['Сохранено ✓ — после входа Батлер разложит по местам','Gespeichert ✓ – nach der Anmeldung sortiert der Butler','Saved ✓ — the butler sorts it after sign-in','Zapisano ✓ — po zalogowaniu kamerdyner posortuje','Kaydedildi ✓ — girişten sonra uşak düzenler','Enregistré ✓ — trié après la connexion','Guardado ✓ — se ordena al iniciar sesión'],
+ pgN:['Страница %n','Seite %n','Page %n','Strona %n','Sayfa %n','Page %n','Página %n'],
+ ready:['Готово','Fertig','Done','Gotowe','Tamam','Terminé','Listo'],
+ pgOk:['Страница %n ✓ — снимайте следующую','Seite %n ✓ – nächste aufnehmen','Page %n ✓ — take the next one','Strona %n ✓ — kolejna','Sayfa %n ✓ — sıradaki','Page %n ✓ — la suivante','Página %n ✓ — la siguiente'],
+ docT:['Документ','Dokument','Document','Dokument','Belge','Document','Documento'],
+ nameP:['Название, например «Finanzamt · Bescheid 2025»','Name, z. B. „Finanzamt · Bescheid 2025“','Name, e.g. “Tax office · notice 2025”','Nazwa, np. „Urząd skarbowy 2025”','Ad, ör. “Vergi dairesi 2025”','Nom, p. ex. « Impôts 2025 »','Nombre, p. ej. «Hacienda 2025»'],
+ tipM:['Нажмите страницу — править · держите и тащите — поменять порядок','Seite antippen – bearbeiten · halten und ziehen – Reihenfolge','Tap a page to edit · hold and drag to reorder','Dotknij — edytuj · przytrzymaj i przeciągnij — kolejność','Dokun — düzenle · basılı tut ve sürükle — sıra','Touchez pour modifier · maintenez et glissez pour l’ordre','Toca para editar · mantén y arrastra para ordenar'],
+ tip1:['Нажмите страницу, чтобы поправить','Seite antippen zum Bearbeiten','Tap the page to edit','Dotknij strony, aby edytować','Düzenlemek için dokunun','Touchez la page pour modifier','Toca la página para editar'],
+ txt:['Текст','Text','Text','Tekst','Metin','Texte','Texto'],
+ share:['PDF · поделиться','PDF · teilen','PDF · share','PDF · udostępnij','PDF · paylaş','PDF · partager','PDF · compartir'],
+ saveDoc:['Сохранить в «Документы»','In „Dokumente“ speichern','Save to “Documents”','Zapisz w „Dokumentach”','“Belgeler”e kaydet','Enregistrer dans « Documents »','Guardar en «Documentos»'],
+ closeQ:['Закрыть сканер? Снятые страницы не сохранятся.','Scanner schließen? Die Seiten werden nicht gespeichert.','Close the scanner? The pages will not be saved.','Zamknąć skaner? Strony nie zostaną zapisane.','Tarayıcı kapatılsın mı? Sayfalar kaydedilmez.','Fermer le scanner ? Les pages ne seront pas enregistrées.','¿Cerrar el escáner? Las páginas no se guardarán.'],
+ ocrT:['Распознаю текст','Text wird erkannt','Reading the text','Rozpoznaję tekst','Metin okunuyor','Lecture du texte','Leyendo el texto'],
+ pgOf:['Страница %a из %b…','Seite %a von %b …','Page %a of %b…','Strona %a z %b…','Sayfa %a / %b…','Page %a sur %b…','Página %a de %b…'],
+ ocrS:['Немецкий и язык приложения · только на этом телефоне','Deutsch und App-Sprache · nur auf diesem Telefon','German and the app language · on this phone only','Niemiecki i język aplikacji · tylko na tym telefonie','Almanca ve uygulama dili · yalnızca bu telefonda','Allemand et langue de l’app · sur ce téléphone','Alemán y el idioma de la app · solo en este teléfono'],
+ stop:['Остановить','Stoppen','Stop','Zatrzymaj','Durdur','Arrêter','Detener'],
+ allP:['Все страницы','Alle Seiten','All pages','Wszystkie strony','Tüm sayfalar','Toutes les pages','Todas las páginas'],
+ noTxt:['Текст не найден','Kein Text gefunden','No text found','Nie znaleziono tekstu','Metin bulunamadı','Aucun texte trouvé','No se encontró texto'],
+ chk:['Цифры и суммы выделены — сверьте их со сканом. Текст можно поправить прямо здесь.','Zahlen und Beträge sind markiert – bitte mit dem Scan vergleichen. Text hier direkt korrigierbar.','Numbers and amounts are highlighted — check them against the scan. You can edit the text here.','Liczby i kwoty są wyróżnione — sprawdź je ze skanem.','Sayılar ve tutarlar işaretli — taramayla karşılaştırın.','Chiffres et montants surlignés — vérifiez-les avec le scan.','Cifras e importes resaltados — compruébalos con el escaneo.'],
+ copy:['Копировать','Kopieren','Copy','Kopiuj','Kopyala','Copier','Copiar'],
+ sendT:['Отправить текстом','Als Text senden','Send as text','Wyślij jako tekst','Metin olarak gönder','Envoyer en texte','Enviar como texto'],
+ toNote:['В заметки','Zu Notizen','To notes','Do notatek','Notlara','Vers les notes','A notas'],
+ copied:['Скопировано ✓','Kopiert ✓','Copied ✓','Skopiowano ✓','Kopyalandı ✓','Copié ✓','Copiado ✓'],
+ noted:['Сохранено в заметках ✓','In Notizen gespeichert ✓','Saved to notes ✓','Zapisano w notatkach ✓','Notlara kaydedildi ✓','Enregistré dans les notes ✓','Guardado en notas ✓'],
+ ocrErr:['Не удалось распознать текст на этом устройстве','Text konnte auf diesem Gerät nicht erkannt werden','Could not read the text on this device','Nie udało się rozpoznać tekstu','Metin bu cihazda okunamadı','Impossible de lire le texte sur cet appareil','No se pudo leer el texto en este dispositivo'],
+ sm:['Разгладить','Glätten','Smooth','Wygładź','Düzleştir','Lisser','Alisar'],
+ smS:['для помятых листов · выпрямить строки','für zerknitterte Blätter · Zeilen begradigen','for crumpled sheets · straighten the lines','dla pogniecionych kartek · prostuje wiersze','buruşuk sayfalar için · satırları düzeltir','pour feuilles froissées · lignes droites','para hojas arrugadas · endereza las líneas'],
+ noteS:['Выровнено · строки выпрямлены · складки убраны','Begradigt · Zeilen geglättet · Knicke entfernt','Straightened · lines smoothed · creases removed','Wyprostowano · wiersze wygładzone','Düzeltildi · satırlar düzleştirildi','Redressé · lignes lissées · plis retirés','Enderezado · líneas alisadas · pliegues quitados'],
+ del:['Удалить','Löschen','Delete','Usuń','Sil','Supprimer','Eliminar'],
+ noteO:['Оригинал · фото без обработки — для чистого листа выберите «Документ»','Original · unbearbeitetes Foto – für ein sauberes Blatt „Dokument“ wählen','Original · untouched photo — choose “Document” for a clean sheet','Oryginał · zdjęcie bez obróbki — wybierz „Dokument”','Orijinal · işlenmemiş fotoğraf — temiz sayfa için “Belge”yi seçin','Original · photo non traitée — choisissez « Document »','Original · foto sin procesar — elige «Documento»'],
+ arc:['Все документы','Alle Dokumente','All documents','Wszystkie dokumenty','Tüm belgeler','Tous les documents','Todos los documentos'],
+ qscan:['📄 Сканировать документ','📄 Dokument scannen','📄 Scan a document','📄 Skanuj dokument','📄 Belge tara','📄 Scanner un document','📄 Escanear documento'],
+ dept:['Сканер','Scanner','Scanner','Skaner','Tarayıcı','Scanner','Escáner'],deptS:['скан · файлы · удостоверение · визитка','Scan · Dateien · Ausweis · Visitenkarte','scan · files · ID · business card','skan · pliki · dowód · wizytówka','tarama · dosyalar · kimlik · kartvizit','scan · fichiers · pièce d’identité · carte','escaneo · archivos · ID · tarjeta'],
+ none:['Лист не найден — рамка на весь снимок, поправьте углы','Kein Blatt erkannt – Rahmen auf ganzes Bild, Ecken anpassen','No sheet found — frame covers the whole photo, adjust the corners','Nie znaleziono kartki — popraw rogi','Sayfa bulunamadı — köşeleri ayarlayın','Aucune feuille — ajustez les coins','No se encontró hoja — ajusta las esquinas']};
+const sct=(k,o)=>{let t=cv5n(SC[k]);if(o)for(const q in o)t=t.split('%'+q).join(o[q]);return t};
+
+/* ---------- image maths ---------- */
+const scLum=(d,n)=>{const L=new Float32Array(n);for(let p=0,j=0;p<n;p++,j+=4)L[p]=.299*d[j]+.587*d[j+1]+.114*d[j+2];return L};
+function scBox(a,w,h,r){if(r<1)return a;const t=new Float32Array(a.length),o=new Float32Array(a.length),n=2*r+1;
+ for(let y=0;y<h;y++){let s=0;const row=y*w;for(let x=-r;x<=r;x++)s+=a[row+Math.min(w-1,Math.max(0,x))];for(let x=0;x<w;x++){t[row+x]=s/n;s+=a[row+Math.min(w-1,x+r+1)]-a[row+Math.max(0,x-r)]}}
+ for(let x=0;x<w;x++){let s=0;for(let y=-r;y<=r;y++)s+=t[Math.min(h-1,Math.max(0,y))*w+x];for(let y=0;y<h;y++){o[y*w+x]=s/n;s+=t[Math.min(h-1,y+r+1)*w+x]-t[Math.max(0,y-r)*w+x]}}return o}
+function scOtsu(a){const H=new Float64Array(256);let mn=1e9,mx=-1e9;for(const v of a){if(v<mn)mn=v;if(v>mx)mx=v}const k=255/Math.max(1e-6,mx-mn);for(const v of a)H[Math.min(255,Math.max(0,((v-mn)*k)|0))]++;
+ const N=a.length;let sum=0;for(let i2=0;i2<256;i2++)sum+=i2*H[i2];let sB=0,wB=0,best=0,th=128;for(let t=0;t<256;t++){wB+=H[t];if(!wB)continue;const wF=N-wB;if(!wF)break;sB+=t*H[t];const mB=sB/wB,mF=(sum-sB)/wF,b=wB*wF*(mB-mF)*(mB-mF);if(b>best){best=b;th=t}}return mn+th/k}
+function scHull(P){P.sort((a,b)=>a[0]-b[0]||a[1]-b[1]);const cr=(o,a,b)=>(a[0]-o[0])*(b[1]-o[1])-(a[1]-o[1])*(b[0]-o[0]);const lo=[],up=[];
+ for(const p of P){while(lo.length>=2&&cr(lo[lo.length-2],lo[lo.length-1],p)<=0)lo.pop();lo.push(p)}for(let k=P.length-1;k>=0;k--){const p=P[k];while(up.length>=2&&cr(up[up.length-2],up[up.length-1],p)<=0)up.pop();up.push(p)}up.pop();lo.pop();return lo.concat(up)}
+const scArea=q=>{let s=0;for(let k=0;k<q.length;k++){const a=q[k],b=q[(k+1)%q.length];s+=a[0]*b[1]-b[0]*a[1]}return Math.abs(s)/2};
+function scBestQuad(h){let H=h;if(H.length>28){const st=H.length/28;H=Array.from({length:28},(_,k)=>h[Math.floor(k*st)])}const n=H.length;if(n<4)return null;let best=0,bq=null;
+ for(let a=0;a<n;a++)for(let b=a+1;b<n;b++)for(let c=b+1;c<n;c++)for(let d=c+1;d<n;d++){const q=[H[a],H[b],H[c],H[d]],A=scArea(q);if(A>best){best=A;bq=q}}return bq}
+function scOrder(q){const c=[q.reduce((s,p)=>s+p[0],0)/4,q.reduce((s,p)=>s+p[1],0)/4];const s=q.slice().sort((a,b)=>Math.atan2(a[1]-c[1],a[0]-c[0])-Math.atan2(b[1]-c[1],b[0]-c[0]));
+ let k=0,m=1e18;s.forEach((p,j)=>{const v=p[0]+p[1];if(v<m){m=v;k=j}});return[0,1,2,3].map(j=>s[(k+j)%4])}/* tl,tr,br,bl */
+/* finds the paper: bright and colourless against the table; returns corners (0..1) and the mask for edge curves */
+function scSeg(src,sw,sh,side){const k=side/Math.max(sw,sh),w=Math.max(8,Math.round(sw*k)),h=Math.max(8,Math.round(sh*k));const cv=document.createElement('canvas');cv.width=w;cv.height=h;const x=cv.getContext('2d',{willReadFrequently:!0});x.drawImage(src,0,0,w,h);
+ const d=x.getImageData(0,0,w,h).data,n=w*h,S=new Float32Array(n);for(let p=0,j=0;p<n;p++,j+=4){const r=d[j],g2=d[j+1],b=d[j+2],mx=Math.max(r,g2,b),mn=Math.min(r,g2,b);S[p]=(.299*r+.587*g2+.114*b)-1.1*(mx-mn)}
+ const B=scBox(S,w,h,Math.max(1,Math.round(side/160))),th=scOtsu(B),M=new Uint8Array(n);for(let p=0;p<n;p++)M[p]=B[p]>th?1:0;
+ const lab=new Int32Array(n).fill(-1);let bestA=0,bestId=-1;const stack=new Int32Array(n);
+ for(let p0=0;p0<n;p0++){if(!M[p0]||lab[p0]>=0)continue;let sp=0,a=0;stack[sp++]=p0;lab[p0]=p0;while(sp){const p=stack[--sp];a++;const px=p%w,py=(p-px)/w;
+  if(px>0&&M[p-1]&&lab[p-1]<0){lab[p-1]=p0;stack[sp++]=p-1}if(px<w-1&&M[p+1]&&lab[p+1]<0){lab[p+1]=p0;stack[sp++]=p+1}if(py>0&&M[p-w]&&lab[p-w]<0){lab[p-w]=p0;stack[sp++]=p-w}if(py<h-1&&M[p+w]&&lab[p+w]<0){lab[p+w]=p0;stack[sp++]=p+w}}
+  if(a>bestA){bestA=a;bestId=p0}}
+ if(bestA<n*.1||bestA>n*.985)return null;const mask=new Uint8Array(n);const P=[];
+ for(let y=0;y<h;y++){let l=-1,r=-1;for(let x2=0;x2<w;x2++){if(lab[y*w+x2]===bestId){mask[y*w+x2]=1;if(l<0)l=x2;r=x2}}if(l>=0){P.push([l,y]);P.push([r+1,y])}}
+ const hull=scHull(P);const q=scBestQuad(hull);if(!q)return null;const qa=scArea(q);if(qa<n*.1)return null;
+ /* fill holes (text) inside the hull so the edge search only sees the real border */
+ let mnx=w,mny=h,mxx=0,mxy=0;for(const p of P){if(p[0]<mnx)mnx=p[0];if(p[0]>mxx)mxx=p[0];if(p[1]<mny)mny=p[1];if(p[1]>mxy)mxy=p[1]}const inside=mnx>w*.012&&mny>h*.012&&mxx<w*.988&&mxy<h*.988;
+ return{q:scOrder(q).map(p=>[p[0]/w,p[1]/h]),mask,mw:w,mh:h,fill:qa/n,clean:inside&&qa/bestA>.9&&qa/bestA<1.12}}
+/* v239: edge finder — works also for white paper on a light table: looks for the four long straight borders of the sheet */
+function scEdges(src,sw,sh,side){const k=side/Math.max(sw,sh),w=Math.max(8,Math.round(sw*k)),h=Math.max(8,Math.round(sh*k));const cv=document.createElement('canvas');cv.width=w;cv.height=h;const x=cv.getContext('2d',{willReadFrequently:!0});x.drawImage(src,0,0,w,h);
+ const d=x.getImageData(0,0,w,h).data,n=w*h;let L=scLum(d,n);L=scBox(scBox(L,w,h,1),w,h,1);const M=new Float32Array(n),A=new Float32Array(n);
+ for(let y=1;y<h-1;y++)for(let x2=1;x2<w-1;x2++){const p=y*w+x2;const gx=(L[p-w+1]+2*L[p+1]+L[p+w+1])-(L[p-w-1]+2*L[p-1]+L[p+w-1]),gy=(L[p+w-1]+2*L[p+w]+L[p+w+1])-(L[p-w-1]+2*L[p-w]+L[p-w+1]);M[p]=Math.hypot(gx,gy);A[p]=Math.atan2(gy,gx)}
+ const srt=Float32Array.from(M).sort();const thr=Math.max(8,srt[Math.floor(n*.8)]);
+ const NT=180,diag=Math.ceil(Math.hypot(w,h)),NR=2*diag+1,acc=new Float32Array(NT*NR),CS=new Float32Array(NT),SN=new Float32Array(NT);for(let t=0;t<NT;t++){CS[t]=Math.cos(t*Math.PI/NT);SN[t]=Math.sin(t*Math.PI/NT)}
+ for(let y=2;y<h-2;y++)for(let x2=2;x2<w-2;x2++){const p=y*w+x2,m=M[p];if(m<thr)continue;let a=A[p];if(a<0)a+=Math.PI;const t0=Math.round(a/Math.PI*NT);const wt=Math.min(m,thr*4);
+  for(let dt=-5;dt<=5;dt++){const t=((t0+dt)%NT+NT)%NT;const r=Math.round(x2*CS[t]+y*SN[t])+diag;acc[t*NR+r]+=wt}}
+ const peaks=[];for(let t=0;t<NT;t++)for(let r=0;r<NR;r++){const v=acc[t*NR+r];if(v<thr*8)continue;let mx=!0;for(let dt=-4;dt<=4&&mx;dt++)for(let dr=-6;dr<=6;dr++){if(!dt&&!dr)continue;const tt=t+dt,rr=r+dr;let T2=tt,R2=rr;if(tt<0){T2=tt+NT;R2=2*diag-rr}else if(tt>=NT){T2=tt-NT;R2=2*diag-rr}if(R2<0||R2>=NR)continue;if(acc[T2*NR+R2]>v){mx=!1;break}}if(mx)peaks.push([v,t,r-diag])}
+ peaks.sort((a,b)=>b[0]-a[0]);const V=[],Hh=[];for(const[v,t,r]of peaks){const th=t*Math.PI/NT,isV=Math.abs(Math.cos(th))>Math.abs(Math.sin(th)),G=isV?V:Hh;if(G.length<14)G.push({c:Math.cos(th),s:Math.sin(th),r});if(V.length>=14&&Hh.length>=14)break}
+ const X=(a,b)=>{const den=a.c*b.s-a.s*b.c;if(Math.abs(den)<1e-6)return null;return[(a.r*b.s-b.r*a.s)/den,(a.c*b.r-b.c*a.r)/den]};
+ const sup=(P,Q)=>{const len=Math.hypot(Q[0]-P[0],Q[1]-P[1]);if(len<8)return 0;const nx=-(Q[1]-P[1])/len,ny=(Q[0]-P[0])/len;let ok=0,N=48;for(let j=0;j<N;j++){const t=(j+.5)/N;let best=0;for(let o=-2;o<=2;o++){const xx=Math.round(P[0]+(Q[0]-P[0])*t+nx*o),yy=Math.round(P[1]+(Q[1]-P[1])*t+ny*o);if(xx<1||yy<1||xx>=w-1||yy>=h-1)continue;const pp=yy*w+xx;if(M[pp]>=thr*.4){const al=Math.abs(Math.cos(A[pp])*nx+Math.sin(A[pp])*ny);if(al>.85)best=1}}ok+=best}return ok/N};
+ const score=q=>{const o=scOrder(q);const ar=scArea(o)/n;if(ar<.12||ar>.995)return null;for(const p of o)if(p[0]<-w*.03||p[1]<-h*.03||p[0]>w*1.03||p[1]>h*1.03)return null;
+  for(let j=0;j<4;j++){const a=o[j],b=o[(j+1)%4],c=o[(j+2)%4];const cr=(b[0]-a[0])*(c[1]-b[1])-(b[1]-a[1])*(c[0]-b[0]);if(cr<=0)return null;const v1=[a[0]-b[0],a[1]-b[1]],v2=[c[0]-b[0],c[1]-b[1]];const cs=(v1[0]*v2[0]+v1[1]*v2[1])/Math.hypot(...v1)/Math.hypot(...v2);if(Math.abs(cs)>.5)return null}
+  const S=[0,1,2,3].map(j=>sup(o[j],o[(j+1)%4]));const mn=Math.min(...S),me=S.reduce((a,b)=>a+b)/4;if(mn<.35)return null;
+  const cx=(o[0][0]+o[1][0]+o[2][0]+o[3][0])/4,cy=(o[0][1]+o[1][1]+o[2][1]+o[3][1])/4,smp=[];for(let a=0;a<=10;a++)for(let b=0;b<=10;b++){const u=.15+.7*a/10,v=.15+.7*b/10;const xx=Math.round((1-u)*(1-v)*o[0][0]+u*(1-v)*o[1][0]+u*v*o[2][0]+(1-u)*v*o[3][0]),yy=Math.round((1-u)*(1-v)*o[0][1]+u*(1-v)*o[1][1]+u*v*o[2][1]+(1-u)*v*o[3][1]);if(xx>=0&&yy>=0&&xx<w&&yy<h)smp.push(L[yy*w+xx])}smp.sort((a,b)=>a-b);const pb=smp[Math.floor(smp.length*.8)]||1;
+  let bf=1;for(let j=0;j<4;j++){const P=o[j],Q=o[(j+1)%4],len=Math.hypot(Q[0]-P[0],Q[1]-P[1]);let nx=-(Q[1]-P[1])/len,ny=(Q[0]-P[0])/len;if(nx*(cx-(P[0]+Q[0])/2)+ny*(cy-(P[1]+Q[1])/2)<0){nx=-nx;ny=-ny}const B=[],O=[];for(let t=.1;t<=.9;t+=.04)for(let off=4;off<=8;off+=2){const bx=P[0]+(Q[0]-P[0])*t,by=P[1]+(Q[1]-P[1])*t;let xx=Math.round(bx+nx*off),yy=Math.round(by+ny*off);if(xx>=0&&yy>=0&&xx<w&&yy<h)B.push(L[yy*w+xx]);xx=Math.round(bx-nx*off);yy=Math.round(by-ny*off);if(xx>=0&&yy>=0&&xx<w&&yy<h)O.push(L[yy*w+xx])}B.sort((a,b)=>a-b);O.sort((a,b)=>a-b);const iv=B[Math.floor(B.length*.7)]||0,r=iv/pb;bf*=Math.max(.08,Math.min(1,(r-.8)/.1));}
+  return{o,sc:(mn*.6+me*.4)*Math.pow(ar,.6)*bf,mn,me,bf}};
+ let best=null;for(let a=0;a<V.length;a++)for(let b=a+1;b<V.length;b++)for(let c=0;c<Hh.length;c++)for(let e=c+1;e<Hh.length;e++){const q=[X(V[a],Hh[c]),X(V[b],Hh[c]),X(V[b],Hh[e]),X(V[a],Hh[e])];if(q.some(z=>!z))continue;const r=score(q);if(r&&(!best||r.sc>best.sc))best=r}
+ return{best,score,w,h,V,Hh,X,M,A,thr,L}}
+function scDetect(src,sw,sh,side){let seg=null,ed=null;try{seg=scSeg(src,sw,sh,side)}catch{}try{ed=scEdges(src,sw,sh,Math.min(side,420))}catch{}
+ let segS=null;if(seg&&ed){const q=seg.q.map(p=>[p[0]*ed.w,p[1]*ed.h]);segS=ed.score(q)}
+ if(seg&&seg.clean){seg.conf=Math.max(.6,segS?segS.mn:.6);return seg}
+ const e=ed&&ed.best;if(e&&(!segS||e.sc>segS.sc*1.08)){/* the segmented mask only helps with bent edges when it agrees with the found borders */
+  let agree=!1;if(seg){const qs=scOrder(seg.q.map(p=>[p[0]*ed.w,p[1]*ed.h]));agree=qs.every((p,j)=>Math.hypot(p[0]-e.o[j][0],p[1]-e.o[j][1])<Math.max(ed.w,ed.h)*.03)}
+  return{q:e.o.map(p=>[p[0]/ed.w,p[1]/ed.h]),mask:agree?seg.mask:null,mw:agree?seg.mw:0,mh:agree?seg.mh:0,fill:scArea(e.o)/(ed.w*ed.h),conf:e.mn}}
+ if(seg){seg.conf=segS?segS.mn:.3;return seg}return null}
+/* v240: the user puts the corners roughly — the butler then snaps each side to the real paper border nearby and follows a bent border */
+function scRefine(src,q){let E=null;try{E=scEdges(src,src.width,src.height,640)}catch{}if(!E)return{q,E:null};const k=E.w/src.width;const Q=q.map(p=>[p[0]*k,p[1]*k]);const diag=Math.hypot(E.w,E.h),lines=E.V.concat(E.Hh);
+ const side=j=>{const P=Q[j],R=Q[(j+1)%4];const dx=R[0]-P[0],dy=R[1]-P[1],len=Math.hypot(dx,dy);let best=null,bs=0;
+  for(const l of lines){/* line: x·c + y·s = r ; direction (−s, c) */const cosA=Math.abs((-l.s*dx+l.c*dy)/len);if(cosA<Math.cos(8*Math.PI/180))continue;const d1=Math.abs(P[0]*l.c+P[1]*l.s-l.r),d2=Math.abs(R[0]*l.c+R[1]*l.s-l.r);if(Math.max(d1,d2)>diag*.022)continue;
+   let sup=0,s0=0,s1=0,N=40;for(let t=0;t<N;t++){const u=(t+.5)/N,x0=P[0]+dx*u,y0=P[1]+dy*u,dd=x0*l.c+y0*l.s-l.r;let hit=0;for(let o=-1;o<=1&&!hit;o++){const xx=Math.round(x0-dd*l.c+l.c*o),yy=Math.round(y0-dd*l.s+l.s*o);if(xx<1||yy<1||xx>=E.w-1||yy>=E.h-1)continue;const pp=yy*E.w+xx;if(E.M[pp]>=E.thr*.4&&Math.abs(Math.cos(E.A[pp])*l.c+Math.sin(E.A[pp])*l.s)>.85)hit=1}sup+=hit;if(u<.25)s0+=hit;if(u>.75)s1+=hit}
+   if(s0<N*.25*.5||s1<N*.25*.5)continue;
+   if(sup/N<=.35)continue;/* paper on the inner side, something darker on the outer side — not a printed line or a fold */
+   const cx=(Q[0][0]+Q[1][0]+Q[2][0]+Q[3][0])/4,cy=(Q[0][1]+Q[1][1]+Q[2][1]+Q[3][1])/4;let nx=l.c,ny=l.s;const mxp=(P[0]+R[0])/2,myp=(P[1]+R[1])/2;if(nx*(cx-mxp)+ny*(cy-myp)<0){nx=-nx;ny=-ny}
+   const I=[],O=[];for(let t=.1;t<=.9;t+=.05){const x0=P[0]+dx*t,y0=P[1]+dy*t,dd=x0*l.c+y0*l.s-l.r,bx=x0-dd*l.c,by=y0-dd*l.s;for(let off=3;off<=6;off+=1.5){let xx=Math.round(bx+nx*off),yy=Math.round(by+ny*off);if(xx>=0&&yy>=0&&xx<E.w&&yy<E.h)I.push(E.L[yy*E.w+xx]);xx=Math.round(bx-nx*off);yy=Math.round(by-ny*off);if(xx>=0&&yy>=0&&xx<E.w&&yy<E.h)O.push(E.L[yy*E.w+xx])}}
+   if(O.length>4&&I.length>4){I.sort((a,b)=>a-b);O.sort((a,b)=>a-b);const iv=I[Math.floor(I.length*.7)],ov=O[Math.floor(O.length*.7)];if(Math.abs(iv-ov)/Math.max(1,iv)<.015)continue}
+   const sc=sup/N-(d1+d2)/2/(diag*.022)*.7;if(sc>bs){bs=sc;best=l}}return best};
+ const L4=[0,1,2,3].map(side);let out=Q.map((p,j)=>{const a=L4[(j+3)%4],b=L4[j];if(!a||!b)return p;const x=E.X(a,b);if(!x||Math.hypot(x[0]-p[0],x[1]-p[1])>diag*.028)return p;return x});
+ /* keep a snapped corner only if the two sheet edges at it really get better */
+ const segS=(P,R)=>{const dx=R[0]-P[0],dy=R[1]-P[1],len=Math.hypot(dx,dy);if(len<6)return 0;const nx=-dy/len,ny=dx/len;let ok=0,N=40;for(let t=0;t<N;t++){const u=(t+.5)/N;let hit=0;for(let o=-1.5;o<=1.5&&!hit;o+=.75){const xx=Math.round(P[0]+dx*u+nx*o),yy=Math.round(P[1]+dy*u+ny*o);if(xx<1||yy<1||xx>=E.w-1||yy>=E.h-1)continue;const pp=yy*E.w+xx;if(E.M[pp]>=E.thr*.4&&Math.abs(Math.cos(E.A[pp])*nx+Math.sin(E.A[pp])*ny)>.85)hit=1}ok+=hit}return ok/N};
+ out=out.map((p,j)=>{if(p===Q[j])return p;const pr=out[(j+3)%4],nx2=out[(j+1)%4];const before=segS(pr,Q[j])+segS(Q[j],nx2),after=segS(pr,p)+segS(p,nx2);return after>before+.05?p:Q[j]});
+ return{q:out.map(p=>[p[0]/k,p[1]/k]),E,k}}
+/* bent borders from the edge picture (when the sheet is not a clean bright blob) */
+function scBendsE(E,k,q){if(!E)return null;const Q=q.map(p=>[p[0]*k,p[1]*k]);const cx=(Q[0][0]+Q[1][0]+Q[2][0]+Q[3][0])/4,cy=(Q[0][1]+Q[1][1]+Q[2][1]+Q[3][1])/4,N=25,out=[];
+ for(let s2=0;s2<4;s2++){const A=Q[s2],B=Q[(s2+1)%4],L=Math.hypot(B[0]-A[0],B[1]-A[1]);let nx=-(B[1]-A[1])/L,ny=(B[0]-A[0])/L;if(nx*((A[0]+B[0])/2-cx)+ny*((A[1]+B[1])/2-cy)<0){nx=-nx;ny=-ny}
+  const R=Math.max(3,L*.045),raw=[];for(let j=0;j<N;j++){const t=j/(N-1),px=A[0]+(B[0]-A[0])*t,py=A[1]+(B[1]-A[1])*t;let bo=null,bm=E.thr*.5;for(let o=-R;o<=R;o+=.5){const xx=Math.round(px+nx*o),yy=Math.round(py+ny*o);if(xx<1||yy<1||xx>=E.w-1||yy>=E.h-1)continue;const pp=yy*E.w+xx,m=E.M[pp];if(m>bm&&Math.abs(Math.cos(E.A[pp])*nx+Math.sin(E.A[pp])*ny)>.8){bm=m;bo=o}}raw.push(bo)}
+  const good=raw.filter(v=>v!==null).length;if(good<N*.75){out.push({nx,ny,o:new Float32Array(N)});continue}
+  const f=raw.map(v=>v===null?0:v);const med=f.map((_,j)=>{const w=f.slice(Math.max(0,j-2),j+3).sort((a,b)=>a-b);return w[w.length>>1]});
+  const a0=med[0],a1=med[N-1];const o=new Float32Array(N);let mx=0,jump=0;for(let j=0;j<N;j++){o[j]=(med[j]-(a0+(a1-a0)*j/(N-1)))/k;mx=Math.max(mx,Math.abs(o[j]));if(j&&Math.abs(med[j]-med[j-1])>R*.35)jump++}
+  if(jump>2||mx*k<L*.006)o.fill(0);out.push({nx,ny,o})}return out}
+/* square → quad homography (Heckbert) */
+function scHomo(q){const[x0,y0]=q[0],[x1,y1]=q[1],[x2,y2]=q[2],[x3,y3]=q[3];const dx1=x1-x2,dx2=x3-x2,dy1=y1-y2,dy2=y3-y2,sx=x0-x1+x2-x3,sy=y0-y1+y2-y3;let g3=0,h3=0;
+ if(Math.abs(sx)>1e-9||Math.abs(sy)>1e-9){const den=dx1*dy2-dx2*dy1;g3=(sx*dy2-dx2*sy)/den;h3=(dx1*sy-sx*dy1)/den}
+ const a=x1-x0+g3*x1,b=x3-x0+h3*x3,c=x0,d=y1-y0+g3*y1,e=y3-y0+h3*y3,f=y0;return(u,v)=>{const z=g3*u+h3*v+1;return[(a*u+b*v+c)/z,(d*u+e*v+f)/z]}}
+/* how far each real sheet edge bends away from the straight line between its corners (pixels of the full image, along the outward normal) */
+function scBends(det,q,W,H){if(!det||!det.mask)return null;const{mask,mw,mh}=det;const at=(x,y)=>{const xi=Math.round(x*mw/W),yi=Math.round(y*mh/H);return xi>=0&&yi>=0&&xi<mw&&yi<mh&&mask[yi*mw+xi]};
+ const cx=(q[0][0]+q[1][0]+q[2][0]+q[3][0])/4,cy=(q[0][1]+q[1][1]+q[2][1]+q[3][1])/4,N=25,out=[];
+ for(let s=0;s<4;s++){const A=q[s],Bp=q[(s+1)%4];const L=Math.hypot(Bp[0]-A[0],Bp[1]-A[1]);let nx=-(Bp[1]-A[1])/L,ny=(Bp[0]-A[0])/L;const mxp=(A[0]+Bp[0])/2,myp=(A[1]+Bp[1])/2;if(nx*(mxp-cx)+ny*(myp-cy)<0){nx=-nx;ny=-ny}
+  const R=L*.06,step=Math.max(1,Math.max(W,H)/Math.max(mw,mh)/2),off=[];let good=0;
+  for(let k=0;k<N;k++){const t=k/(N-1),px=A[0]+(Bp[0]-A[0])*t,py=A[1]+(Bp[1]-A[1])*t;let last=null;for(let o=-R;o<=R;o+=step){if(at(px+nx*o,py+ny*o))last=o}off.push(last);if(last!==null&&Math.abs(last)<R*.98)good++}
+  if(good<N*.7){out.push({nx,ny,o:new Float32Array(N)});continue}
+  for(let k=0;k<N;k++)if(off[k]===null)off[k]=0;const sm=off.map((_,k)=>{let s2=0,c=0;for(let j=-2;j<=2;j++){const v2=off[k+j];if(v2!==undefined){s2+=v2;c++}}return s2/c});
+  const a0=sm[0],a1=sm[N-1];const o=new Float32Array(N);let mx=0;for(let k=0;k<N;k++){o[k]=sm[k]-(a0+(a1-a0)*k/(N-1));mx=Math.max(mx,Math.abs(o[k]))}
+  if(mx<L*.006)o.fill(0);else{const cap=L*.05;for(let k=0;k<N;k++)o[k]=Math.max(-cap,Math.min(cap,o[k]))}out.push({nx,ny,o})}return out}
+function scWarp(img,q,bends){const W0=img.width,H0=img.height;const dist=(a,b)=>Math.hypot(a[0]-b[0],a[1]-b[1]);let w=Math.max(dist(q[0],q[1]),dist(q[3],q[2])),h=Math.max(dist(q[0],q[3]),dist(q[1],q[2]));
+ {const r=w/h;for(const t of [1/Math.SQRT2,Math.SQRT2,8.5/11,11/8.5]){if(Math.abs(r-t)/t<.08){if(t<1)h=w/t;else w=h*t;break}}}const s=Math.min(1.25,2400/Math.max(w,h));w=Math.round(w*s);h=Math.round(h*s);const Hm=(()=>{const c0=[(q[0][0]+q[1][0]+q[2][0]+q[3][0])/4,(q[0][1]+q[1][1]+q[2][1]+q[3][1])/4];return scHomo(q.map(p=>[p[0]+(c0[0]-p[0])*.006,p[1]+(c0[1]-p[1])*.006]))})();
+ const sc=document.createElement('canvas');sc.width=W0;sc.height=H0;const sx=sc.getContext('2d',{willReadFrequently:!0});sx.drawImage(img,0,0);const S=sx.getImageData(0,0,W0,H0).data;
+ const N=25,ev=(o,t)=>{if(!o)return 0;const f=t*(N-1),i0=Math.floor(f),i1=Math.min(N-1,i0+1);return o[i0]+(o[i1]-o[i0])*(f-i0)};
+ const map=(u,v)=>{let[x,y]=Hm(u,v);if(bends){const T=bends[0],Rr=bends[1],Bb=bends[2],Ll=bends[3];const t=ev(T.o,u),r=ev(Rr.o,v),b=ev(Bb.o,1-u),l=ev(Ll.o,1-v);
+   x+=(1-v)*t*T.nx+u*r*Rr.nx+v*b*Bb.nx+(1-u)*l*Ll.nx;y+=(1-v)*t*T.ny+u*r*Rr.ny+v*b*Bb.ny+(1-u)*l*Ll.ny}return[x,y]};
+ const G=16,gw=Math.ceil(w/G)+1,gh=Math.ceil(h/G)+1,GX=new Float32Array(gw*gh),GY=new Float32Array(gw*gh);for(let j=0;j<gh;j++)for(let i2=0;i2<gw;i2++){const p=map(Math.min(1,i2*G/w),Math.min(1,j*G/h));GX[j*gw+i2]=p[0];GY[j*gw+i2]=p[1]}
+ const oc=document.createElement('canvas');oc.width=w;oc.height=h;const ox=oc.getContext('2d');const O=ox.createImageData(w,h),D=O.data;
+ for(let y=0;y<h;y++){const gj=Math.min(gh-2,Math.floor(y/G)),fy=y/G-gj;for(let x=0;x<w;x++){const gi=Math.min(gw-2,Math.floor(x/G)),fx=x/G-gi,k0=gj*gw+gi;
+  const X=(GX[k0]*(1-fx)+GX[k0+1]*fx)*(1-fy)+(GX[k0+gw]*(1-fx)+GX[k0+gw+1]*fx)*fy,Y=(GY[k0]*(1-fx)+GY[k0+1]*fx)*(1-fy)+(GY[k0+gw]*(1-fx)+GY[k0+gw+1]*fx)*fy;
+  const xi=Math.max(0,Math.min(W0-2,Math.floor(X))),yi=Math.max(0,Math.min(H0-2,Math.floor(Y))),ax=Math.max(0,Math.min(1,X-xi)),ay=Math.max(0,Math.min(1,Y-yi));const p=(yi*W0+xi)*4,p2=p+W0*4,o=(y*w+x)*4;
+  for(let c=0;c<3;c++)D[o+c]=(S[p+c]*(1-ax)+S[p+4+c]*ax)*(1-ay)+(S[p2+c]*(1-ax)+S[p2+4+c]*ax)*ay;D[o+3]=255}}
+ ox.putImageData(O,0,0);return oc}
+/* even paper: divide by the paper's own brightness (estimated without the text), so creases, shadows and uneven light vanish */
+function scClean(cv,mode,strong){if(mode==='orig')return cv;const w=cv.width,h=cv.height;const x=cv.getContext('2d',{willReadFrequently:!0});const I=x.getImageData(0,0,w,h),d=I.data,n=w*h;
+ const f=Math.max(8,Math.round(Math.max(w,h)/(strong?85:110))),bw=Math.ceil(w/f),bh=Math.ceil(h/f);const chans=mode==='doc'?1:3;const BG=[];
+ for(let c=0;c<chans;c++){let b=new Float32Array(bw*bh);for(let by=0;by<bh;by++)for(let bx=0;bx<bw;bx++){let m=0;for(let y=by*f;y<Math.min(h,by*f+f);y+=2)for(let x2=bx*f;x2<Math.min(w,bx*f+f);x2+=2){const j=(y*w+x2)*4;const v=chans===1?(.299*d[j]+.587*d[j+1]+.114*d[j+2]):d[j+c];if(v>m)m=v}b[by*bw+bx]=m}
+  for(let it=0;it<4;it++){const t=new Float32Array(b.length);for(let y=0;y<bh;y++)for(let x2=0;x2<bw;x2++){let m=0;for(let dy=-1;dy<=1;dy++)for(let dx=-1;dx<=1;dx++){const yy=Math.min(bh-1,Math.max(0,y+dy)),xx=Math.min(bw-1,Math.max(0,x2+dx));if(b[yy*bw+xx]>m)m=b[yy*bw+xx]}t[y*bw+x2]=m}b=t}
+  b=scBox(scBox(b,bw,bh,2),bw,bh,2);BG.push(b)}
+ const bgAt=(b,x2,y)=>{const fx=Math.min(bw-1.001,Math.max(0,x2/f-.5)),fy=Math.min(bh-1.001,Math.max(0,y/f-.5)),i0=Math.floor(fx),j0=Math.floor(fy),ax=fx-i0,ay=fy-j0,k=j0*bw+i0;return(b[k]*(1-ax)+b[k+1]*ax)*(1-ay)+(b[k+bw]*(1-ax)+b[k+bw+1]*ax)*ay};
+ for(let y=0;y<h;y++)for(let x2=0;x2<w;x2++){const j=(y*w+x2)*4;
+  if(mode==='doc'){const L=.299*d[j]+.587*d[j+1]+.114*d[j+2];let v=L/Math.max(40,bgAt(BG[0],x2,y));v=strong?(v-.3)/(.75-.3):(v-.32)/(.8-.32);v=v<0?0:v>1?1:v;v=v*v*(3-2*v);const o=255*Math.pow(v,1.15);d[j]=d[j+1]=d[j+2]=o}
+  else{for(let c=0;c<3;c++){let v=d[j+c]/Math.max(40,bgAt(BG[c],x2,y));v=strong?(v-.06)/(.84-.06):(v-.06)/(.88-.06);v=v<0?0:v>1?1:v;d[j+c]=255*Math.pow(v,1.08)}}}
+ const oc=document.createElement('canvas');oc.width=w;oc.height=h;oc.getContext('2d').putImageData(I,0,0);
+ if(mode==='doc'){/* light unsharp mask for crisp print */const o2=oc.getContext('2d',{willReadFrequently:!0}),J=o2.getImageData(0,0,w,h),e=J.data;const Lm=new Float32Array(n);for(let p=0;p<n;p++)Lm[p]=e[p*4];const Bl=scBox(Lm,w,h,1);for(let p=0;p<n;p++){const v=Math.max(0,Math.min(255,Lm[p]+.6*(Lm[p]-Bl[p])));e[p*4]=e[p*4+1]=e[p*4+2]=v}o2.putImageData(J,0,0)}
+ return scEdgeWhite(oc)}
+/* v247: what is left of the table, a shadow or a finger along the very border of the sheet turns white — only inside a narrow band at the border, so text and frames stay */
+function scEdgeWhite(cv){try{const W=cv.width,H=cv.height,k=Math.min(1,640/Math.max(W,H)),w=Math.max(8,Math.round(W*k)),h=Math.max(8,Math.round(H*k));const sc=document.createElement('canvas');sc.width=w;sc.height=h;const sx=sc.getContext('2d',{willReadFrequently:!0});sx.drawImage(cv,0,0,w,h);const d=sx.getImageData(0,0,w,h).data,n=w*h;
+ const band=Math.max(3,Math.round(Math.min(w,h)*.035)),ok=new Uint8Array(n);for(let y=0,p=0;y<h;y++)for(let x=0;x<w;x++,p++){if(x>=band&&y>=band&&x<w-band&&y<h-band)continue;const j=p*4;if(.299*d[j]+.587*d[j+1]+.114*d[j+2]<165)ok[p]=1}
+ const seen=new Uint8Array(n),st=[];const push=p=>{if(ok[p]&&!seen[p]){seen[p]=1;st.push(p)}};for(let x=0;x<w;x++){push(x);push((h-1)*w+x)}for(let y=0;y<h;y++){push(y*w);push(y*w+w-1)}
+ let cnt=0;while(st.length){const p=st.pop();cnt++;const x=p%w,y=(p-x)/w;if(x>0)push(p-1);if(x<w-1)push(p+1);if(y>0)push(p-w);if(y<h-1)push(p+w)}
+ if(!cnt||cnt>n*.12)return cv;const X=cv.getContext('2d');X.fillStyle='#fff';const u=1/k;for(let y=0,p=0;y<h;y++)for(let x=0;x<w;x++,p++)if(seen[p])X.fillRect(Math.floor((x-1.5)*u),Math.floor((y-1.5)*u),Math.ceil(4*u),Math.ceil(4*u));return cv}catch(e){return cv}}
+function scRot(cv){const o=document.createElement('canvas');o.width=cv.height;o.height=cv.width;const x=o.getContext('2d');x.translate(o.width,0);x.rotate(Math.PI/2);x.drawImage(cv,0,0);return o}
+
+/* ---------- the scanner window ---------- */
+const scIco={x:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg>',back:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M15 5l-7 7 7 7"/></svg>',
+ bolt:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M13 2L4 14h7l-1 8 9-12h-7z"/></svg>',img:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="9" cy="10" r="2"/><path d="M21 16l-5-5-9 9"/></svg>',rot:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M20 11a8 8 0 1 0-2.3 5.7M20 4v7h-7"/></svg>'};
+/* ---------- v241: smoothing of crumpled pages — straightens wavy text lines ---------- */
+/* how straight the text lines are: sharp horizontal profiles in every block = straight lines */
+function scStraight(ink,w,h){const C=8,Rr=8,cw=w/C,rh=h/Rr,out=[];for(let r=0;r<Rr;r++)for(let c=0;c<C;c++){const x0=Math.floor(c*cw),x1=Math.floor((c+1)*cw),y0=Math.floor(r*rh),y1=Math.floor((r+1)*rh);let s2=0,t=0;for(let y=y0;y<y1;y++){let v=0;for(let x=x0;x<x1;x++)v+=ink[y*w+x];s2+=v*v;t+=v}out.push(t>cw*rh*.01?s2/(t*(x1-x0)):-1)}return out}
+function scInk(cv,k){const w=Math.max(8,Math.round(cv.width*k)),h=Math.max(8,Math.round(cv.height*k));const sc=document.createElement('canvas');sc.width=w;sc.height=h;const sx=sc.getContext('2d',{willReadFrequently:!0});sx.drawImage(cv,0,0,w,h);const d=sx.getImageData(0,0,w,h).data,n=w*h;const L=scLum(d,n),Bg=scBox(scBox(L,w,h,Math.round(w/40)),w,h,Math.round(w/40));const ink=new Float32Array(n);for(let p=0;p<n;p++)ink[p]=L[p]/Math.max(30,Bg[p])<.75?1:0;return{ink,w,h}}
+function scSmooth(cv){try{const r=scSmoothN(cv);if(r)return r}catch(e){}return scSmoothOld(cv)}
 /* v247: «Разгладить» anew — follows every printed line and every table rule across the sheet, measures how each one tilts at each place, and pulls the page so that all of them run level. Checked after the work: kept only when the lines really became straighter. */
 function scLineSl(ink,w,h){const vr=Math.max(14,Math.round(w*.03)),rx=Math.max(4,Math.round(w*.02)),n=w*h,a=new Uint8Array(n);for(let p=0;p<n;p++)a[p]=ink[p]>0?1:0;
  for(let x=0;x<w;x++){let y=0;while(y<h){if(!a[y*w+x]){y++;continue}let e=y;while(e<h&&a[e*w+x])e++;if(e-y>vr)for(let q=y;q<e;q++)a[q*w+x]=0;y=e}}
@@ -546,3 +786,17 @@ try{
  try{const hd=H9X.find(h=>h[0]==='docs');if(hd&&!hd[1].includes('q:sc9'))hd[1].push('q:sc9')}catch{}
  try{if(Array.isArray(At)&&!At.includes('sc9'))At.push('sc9')}catch{}
 }catch(e){}
+/* v247: the scanner is one department — «Документы» › Сканер (its own sign), «Документ» on the home screen and the quick-input button all open it; the plain «Фото» action is gone.
+   A new scan always starts as a clean white «Документ»; «Оригинал» is only kept for the page where it was chosen. */
+try{
+ const SC247='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 8V6a2 2 0 0 1 2-2h2M16 4h2a2 2 0 0 1 2 2v2M20 16v2a2 2 0 0 1-2 2h-2M8 20H6a2 2 0 0 1-2-2v-2"/><path d="M3 12h18"/><path d="M8 8.5h8M8 15.5h5" opacity=".55"/></svg>';
+ const T247={t:['Сканер','Scanner','Scanner','Skaner','Tarayıcı','Scanner','Escáner'],s:['скан · файлы · удостоверение · визитка','Scan · Dateien · Ausweis · Visitenkarte','scan · files · ID · business card','skan · pliki · dowód · wizytówka','tarama · dosyalar · kimlik · kartvizit','scan · fichiers · pièce d’identité · carte','escaneo · archivos · ID · tarjeta']};
+ const dz247=()=>{try{document.querySelectorAll('.dzacts .dzin[data-m="scan"]').forEach(inp=>{const lab=inp.closest('label');if(!lab||lab.dataset.s247)return;lab.dataset.s247='1';lab.classList.add('sc247');const ic=lab.querySelector('.dzbi');ic&&(ic.innerHTML=SC247);
+   if(!inp.dataset.arc&&!inp.dataset.d){const b=lab.querySelector('b'),sm=lab.querySelector('small');b&&(b.textContent=cv5n(T247.t));sm&&(sm.textContent=cv5n(T247.s))}})}catch{}};
+ v=(f=>function(){const r=f.apply(this,arguments);try{dz247()}catch{}return r})(v);
+ try{if(g.scMode==='orig'){g.scMode='doc';$()}}catch{}
+ const st=document.createElement('style');st.textContent=`
+.dzacts .dzbig.sc247 .dzbi{color:var(--gold,#C99A3E)}.dzacts .dzbig.sc247 .dzbi svg{width:28px;height:28px;stroke:currentColor;fill:none}
+.dzacts .dzbig.sc247{border-color:color-mix(in srgb,var(--gold,#C99A3E) 55%,var(--line,rgba(128,128,128,.3)))}
+.bd8ac .rw{grid-template-columns:none!important;grid-auto-flow:column;grid-auto-columns:minmax(0,1fr)}
+`;document.head.appendChild(st)}catch(e){}
