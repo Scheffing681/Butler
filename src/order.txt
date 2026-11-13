@@ -36,4 +36,6 @@ links/search-and-undo.js
 home/edit-in-place.js
 brand/greeting.js
 home/tiles-one-tap.js
+notes/shopping-back.js
+travel/real-earth.js
 hooks/install.js
