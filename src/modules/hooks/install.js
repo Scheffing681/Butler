@@ -16,4 +16,6 @@ try{
  try{Sm=scr(Sm)}catch(e){Hooks.err('install tasks',e)}
  try{ad=scr(ad)}catch(e){Hooks.err('install projects',e)}
  try{Ki=scr(Ki)}catch(e){Hooks.err('install assets',e)}
+ try{tp=scr(tp)}catch(e){Hooks.err('install body',e)}
+ try{Ax=scr(Ax)}catch(e){Hooks.err('install archive',e)}
  try{Yj=scr(Yj)}catch(e){Hooks.err('install kbset',e)}}
