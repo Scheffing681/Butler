@@ -28,4 +28,6 @@ home/templates-folded.js
 sections/folders-and-unknown-routes.js
 backup/data-protection.js
 signin/one-plus-button.js
+money/one-finance.js
+tasks/projects-in-tasks.js
 hooks/install.js

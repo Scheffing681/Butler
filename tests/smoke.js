@@ -99,6 +99,12 @@ const check=(name,ok,detail)=>{results.push([ok?'PASS':'FAIL',name,detail||'']);
  await T(()=>document.querySelector('[data-act=f12undo]')?.click());await p.waitForTimeout(600);check('undo takes the folder apart',(await tiles.count())===n0);
  await T(()=>{window.confirm=()=>true;window.__T.L.f12grp()});
 
+ /* one finance section, projects inside tasks (v261) */
+ where='one finance';{const ks=await T(()=>window.__T.x());check('Финансы/Активы/Проекты are not separate tiles',!ks.some(k=>['q:fin','q:assets','q:projects'].includes(k)),ks.join(','));
+ await T(()=>{window.__T.R('home');window.__T.h9go('c:bank')});await p.waitForTimeout(500);check('the book is called Финансы',/ФИНАНСЫ|Финансы/.test(await T(()=>document.querySelector('.st32tt')?.innerText||'')));
+ await T(()=>{window.__T.m().ftab='ov';window.__T.R('fin')});await p.waitForTimeout(400);const fh=await T(()=>document.querySelector('.screen').innerHTML);check('inner finance room has no repeated overview',!/data-v="ov"/.test(fh)&&!/kbfinl/.test(fh)&&/data-act="kbhome"/.test(fh));
+ await T(()=>window.__T.R('tasks'));await p.waitForTimeout(400);await T(()=>document.querySelector('.pj1chip').click());await p.waitForTimeout(400);check('Проекты open from Задачи',await T(()=>window.__T.m().route)==='projects');
+ await T(()=>window.__T.L.fin1t());await p.waitForTimeout(300);check('old look can come back (two sections)',(await T(()=>window.__T.x())).includes('q:fin'));await T(()=>window.__T.L.fin1t());await p.waitForTimeout(300);check('and one section again',!(await T(()=>window.__T.x())).includes('q:fin'))}
  where='end';check('no errors in the app',!errs.length,errs.slice(0,8).join(' || '));
  const he=await T(()=>window.__T.Hooks.errors);check('no errors inside hooks',!he.length,JSON.stringify(he).slice(0,300));
  await b.close();srv.close();fs.rmSync(TMP,{recursive:true,force:true});
