@@ -13,7 +13,7 @@ const copy=(s,d)=>{for(const n of fs.readdirSync(s)){if(n==='.git'||n==='tests')
 copy(ROOT,TMP);
 {const f=path.join(TMP,'app.js');let s=fs.readFileSync(f,'utf8');const end='v(),Sq()})();',i=s.trimEnd().lastIndexOf(end);
  if(i<0)throw new Error('app.js end marker not found');
- s=s.slice(0,i)+'try{window.__T={L,g:()=>g,m:()=>m,R:(...a)=>R(...a),v:()=>v(),save:()=>$(),x:()=>x_(),h9go:k=>h9go(k),hh:()=>hh(),vt,Ic,bd8C,BD8T,NT,Hooks,sc:{scDetect,scWarp,scClean,scSmooth,scHome}}}catch(e){}\n'+s.slice(i);fs.writeFileSync(f,s)}
+ s=s.slice(0,i)+'try{window.__T={bd8cfg,L,g:()=>g,m:()=>m,R:(...a)=>R(...a),v:()=>v(),save:()=>$(),x:()=>x_(),h9go:k=>h9go(k),hh:()=>hh(),vt,Ic,bd8C,BD8T,NT,Hooks,sc:{scDetect,scWarp,scClean,scSmooth,scHome}}}catch(e){}\n'+s.slice(i);fs.writeFileSync(f,s)}
 const MIME={'.html':'text/html','.js':'text/javascript','.css':'text/css','.json':'application/json','.webmanifest':'application/manifest+json','.png':'image/png','.jpg':'image/jpeg','.webp':'image/webp','.svg':'image/svg+xml','.woff2':'font/woff2','.ttf':'font/ttf'};
 const srv=http.createServer((q,r)=>{const u=decodeURIComponent(q.url.split('?')[0]);const f=path.join(TMP,u==='/'?'index.html':u);if(!f.startsWith(TMP)||!fs.existsSync(f)||fs.statSync(f).isDirectory()){r.writeHead(404);return r.end()}r.writeHead(200,{'content-type':MIME[path.extname(f)]||'application/octet-stream'});fs.createReadStream(f).pipe(r)});
 
@@ -129,6 +129,22 @@ const check=(name,ok,detail)=>{results.push([ok?'PASS':'FAIL',name,detail||'']);
  where='quick input scanner';{await T(()=>window.__T.L.st20());await p.waitForTimeout(600);const has=await T(()=>!!document.querySelector('.qi5three [data-sc1]')&&!document.querySelector('.qi5three [data-ph="0"]'));check('quick input has Сканер, not Фото',has);
  if(has){await T(()=>document.querySelector('.qi5three [data-sc1]').click());await p.waitForTimeout(600);check('Сканер from quick input opens the scanner',await T(()=>!!document.querySelector('.sc9')));}
  await T(()=>{document.querySelectorAll('.sc9,.dtsheet').forEach(x=>x.remove());document.documentElement.classList.remove('sc9on')});await p.waitForTimeout(200)}
+ /* edit the home in place (v266) */
+ where='home edit';{await T(()=>document.querySelectorAll('body>div:not([class]):not([id])').forEach(d=>{if(getComputedStyle(d).position==='fixed')d.remove()}));await T(()=>{window.__T.m().bd8d=window.__T.bd8cfg('plan');window.__T.m().bd8d.blocks=['greet','tiles','today','goal','acts'];window.__T.L.bd8apply()});await p.waitForTimeout(1000);await T(()=>document.querySelectorAll('#td9tour').forEach(t=>t.remove()));
+ const r=await T(()=>{const e=document.querySelector('.screen.bd8s .bd8gr')?.getBoundingClientRect();return e?[e.left+40,e.top+30]:null});
+ if(r){await p.mouse.move(r[0],r[1]);await p.mouse.down();await p.waitForTimeout(800);await p.mouse.up();await p.waitForTimeout(600)}
+ check('holding a block opens edit mode',await T(()=>window.__T.m().he1===1&&document.querySelectorAll('.he1f').length>=4));
+ check('header is locked in edit mode',await T(()=>!!document.querySelector('.he1lock')));
+ const hd=await T(()=>{const f=document.querySelector('.he1f[data-k=goal] .he1h')?.getBoundingClientRect();return f?[f.left+15,f.top+15]:null}),td=await T(()=>document.querySelector('.he1f[data-k=today]')?.getBoundingClientRect().top+10);
+ if(hd&&td){await p.mouse.move(hd[0],hd[1]);await p.mouse.down();for(let k=1;k<=10;k++){await p.mouse.move(hd[0],hd[1]+(td-hd[1])*k/10);await p.waitForTimeout(30)}await p.mouse.up();await p.waitForTimeout(600)}
+ const ord=await T(()=>window.__T.bd8C().cfg.blocks.join(','));check('dragging ≡ moves a block',ord.indexOf('goal')<ord.indexOf('today'),ord);
+ if(await T(()=>!document.querySelector('.he1f')))throw new Error('no edit mode');await T(()=>document.querySelector('.he1f[data-k=tiles]').click());await p.waitForTimeout(400);await T(()=>document.querySelector('.he1sheet [data-v=list]').click());await p.waitForTimeout(400);
+ check('tile size can be changed',await T(()=>window.__T.bd8C().cfg.cols===1));await T(()=>document.querySelectorAll('.he1sheet').forEach(s=>s.remove()));
+ await T(()=>document.querySelector('[data-he=undo]').click());await p.waitForTimeout(500);
+ check('«Отменить» puts everything back',await T(()=>window.__T.bd8C().cfg.blocks.join(',')==='greet,tiles,today,goal,acts'&&window.__T.bd8C().cfg.cols===4&&!window.__T.m().he1));
+ if(r){await p.mouse.move(r[0],r[1]);await p.mouse.down();await p.waitForTimeout(800);await p.mouse.up();await p.waitForTimeout(500)}
+ await T(()=>document.querySelector('.he1f[data-k=goal] [data-he=rm]').click());await p.waitForTimeout(400);await T(()=>document.querySelector('[data-he=done]').click());await p.waitForTimeout(500);
+ check('«Готово» keeps it as «Мой: …»',await T(()=>!window.__T.bd8C().cfg.blocks.includes('goal')&&window.__T.bd8C().saved.some(s=>s.he1&&/План/.test(s.n))))}
  where='end';check('no errors in the app',!errs.length,errs.slice(0,8).join(' || '));
  const he=await T(()=>window.__T.Hooks.errors);check('no errors inside hooks',!he.length,JSON.stringify(he).slice(0,300));
  await b.close();srv.close();fs.rmSync(TMP,{recursive:true,force:true});
