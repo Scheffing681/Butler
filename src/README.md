@@ -28,6 +28,7 @@
 | `kits/` | ready-made style sets (hidden) |
 | `travel/` | real Earth colours on the travel globe and map |
 | `books/` | «Зеркало себя»: free writing, analysis only on request, portrait and plan |
+| `money/` | one Finance section; Butler Finance: decision centre, calculators, health score, stress test, history |
 | `backup/` | data protection, safety copy, restore the latest copy |
 
 ## One connection point (Hooks)
