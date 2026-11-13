@@ -19,4 +19,6 @@ try{
  try{Ki=scr(Ki)}catch(e){Hooks.err('install assets',e)}
  try{tp=scr(tp)}catch(e){Hooks.err('install body',e)}
  try{Ax=scr(Ax)}catch(e){Hooks.err('install archive',e)}
+ try{K$=(f=>function(){return Hooks.run('greeting',f.apply(this,arguments))})(K$)}catch(e){Hooks.err('install greeting',e)}
+ try{S0=scr(S0)}catch(e){Hooks.err('install chat',e)}
  try{Yj=scr(Yj)}catch(e){Hooks.err('install kbset',e)}}

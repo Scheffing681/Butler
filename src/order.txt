@@ -34,4 +34,5 @@ sections/no-twins.js
 links/letter-to-task.js
 links/search-and-undo.js
 home/edit-in-place.js
+brand/greeting.js
 hooks/install.js
