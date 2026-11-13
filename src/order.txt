@@ -31,4 +31,5 @@ signin/one-plus-button.js
 money/one-finance.js
 tasks/projects-in-tasks.js
 sections/no-twins.js
+links/letter-to-task.js
 hooks/install.js
