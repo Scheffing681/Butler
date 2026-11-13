@@ -102,12 +102,12 @@ function p1Chart(S){if(!S||!S.L||!S.L.length||S.x.length<2)return'';const W=340,
  const step=Math.max(1,Math.ceil((S.x.length-1)/5));const ticks=S.x.filter((_,j)=>j%step===0||j===S.x.length-1);
  const lines=S.L.map(L2=>`<path d="${L2.v.map((v,j)=>(j?'L':'M')+X(j).toFixed(1)+' '+Y(v).toFixed(1)).join('')}" fill="none" stroke="${P1COL[L2.k]||P1COL.b}" stroke-width="${L2.k==='b'?2.4:1.6}" ${L2.k==='p'?'stroke-dasharray="4 3"':''}/>`).join('');
  const mark=S.mark&&S.mark<S.x.length?`<line x1="${X(S.mark)}" x2="${X(S.mark)}" y1="${t}" y2="${H-b}" stroke="${P1COL.p}" stroke-dasharray="2 3"/>`:'';
- const data=i(JSON.stringify({x:S.x,L:S.L.map(L2=>({n:L2.n,v:L2.v.map(v=>Math.round(v))}))}));
+ const data=i(JSON.stringify({u:S.u,x:S.x,L:S.L.map(L2=>({n:L2.n,v:L2.v.map(v=>Math.round(v))}))}));
  return`<div class="p1ch" data-p1="${data}"><svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="none" aria-hidden="true"><line x1="${l}" x2="${W-r}" y1="${Y(0)}" y2="${Y(0)}" stroke="${P1COL.p}"/>${mark}${lines}<text x="${l-6}" y="${t+8}" text-anchor="end" font-size="10" fill="currentColor" opacity=".6">${short(hi)}</text><text x="${l-6}" y="${H-b}" text-anchor="end" font-size="10" fill="currentColor" opacity=".6">${short(lo)}</text>${ticks.map(y=>`<text x="${X(S.x.indexOf(y))}" y="${H-6}" text-anchor="middle" font-size="10" fill="currentColor" opacity=".6">${y}</text>`).join('')}<line class="p1cur" x1="0" x2="0" y1="${t}" y2="${H-b}" stroke="currentColor" opacity="0"/></svg>
  <div class="p1lg">${S.L.map(L2=>`<span><i style="background:${P1COL[L2.k]||P1COL.b}"></i>${i(L2.n)}</span>`).join('')}</div><div class="p1rd">${i(p1t('tap'))}</div></div>`}
 function p1Read(el,ev){try{const D=JSON.parse(el.dataset.p1),sv=el.querySelector('svg'),R2=sv.getBoundingClientRect();const fx=(ev.clientX-R2.left)/R2.width*340;const j=Math.max(0,Math.min(D.x.length-1,Math.round((fx-48)/(340-56)*(D.x.length-1))));
  const cur=sv.querySelector('.p1cur'),xx=48+(340-56)*j/(D.x.length-1);cur.setAttribute('x1',xx);cur.setAttribute('x2',xx);cur.setAttribute('opacity','.35');
- el.querySelector('.p1rd').textContent=p1t('year')+' '+D.x[j]+': '+D.L.map(L2=>L2.n+' '+bfM(L2.v[j])).join(' · ')}catch{}}
+ el.querySelector('.p1rd').textContent=(D.u!=null?D.u:p1t('year')+' ')+D.x[j]+': '+D.L.map(L2=>L2.n+' '+bfM(L2.v[j])).join(' · ')}catch{}}
 document.addEventListener('pointerdown',e=>{const el=e.target.closest&&e.target.closest('.p1ch');if(el)p1Read(el,e)},{passive:!0});
 document.addEventListener('pointermove',e=>{if(!e.buttons&&e.pointerType!=='mouse')return;const el=e.target.closest&&e.target.closest('.p1ch');if(el)p1Read(el,e)},{passive:!0});
 /* ---------- result and calculator screens (replace the first versions) ---------- */

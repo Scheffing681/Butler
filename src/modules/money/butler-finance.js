@@ -188,7 +188,7 @@ const BF_R=['bf','bfc','bfh','bfl'];BF_R.forEach(r=>{Te.includes(r)||Te.push(r)}
 (Hooks.h.screen=Hooks.h.screen||[]).unshift(()=>{if(!['bf','bfc','bfh','bfl'].includes(m.route)||g.bfoff)return;try{return m.route==='bfc'?bfCalc():m.route==='bfh'?bfHealthScreen():m.route==='bfl'?bfHist():bfCentre()}catch(e){Hooks.err('bfscreen',e)}});
 /* back inside Butler Finance: calculator → centre → Финансы */
 window.addEventListener('click',e=>{try{if(!m.logged||m.sheet||!BF_R.includes(m.route))return;const b=e.target&&e.target.closest&&e.target.closest('.screen > .sub-hdr > button:first-child');if(!b)return;e.preventDefault();e.stopImmediatePropagation();
- const h=m.hist||[];if(m.route!=='bf'){const up=m.route==='bfc'?(m.bfBack||'bf'):'bf';while(h.length&&BF_R.includes(h[h.length-1].route)&&h[h.length-1].route!==up)h.pop();if(h.length&&h[h.length-1].route===up)h.pop();return R(up,void 0,!0)}
+ const h=m.hist||[];if(m.route!=='bf'){const up=m.route==='bfc'?(m.bfBack||'bf'):m.route==='bfr'?(m.p3RB||'bf'):'bf';while(h.length&&BF_R.includes(h[h.length-1].route)&&h[h.length-1].route!==up)h.pop();if(h.length&&h[h.length-1].route===up)h.pop();return R(up,void 0,!0)}
  while(h.length&&(BF_R.includes(h[h.length-1].route)||h[h.length-1].route==='cat'&&h[h.length-1].cat==='bank'))h.pop();return R('cat','bank',!0)}catch(er){Hooks.err('bfback',er)}},!0);
 /* v275: easy to find — its own tab in «Деньги» (next to Финансы and Аналитика) and the card always shows */
 const BF_NAME={ru:'Прогноз',de:'Prognose',en:'Forecast',pl:'Prognoza',tr:'Öngörü',fr:'Prévisions',es:'Previsión'};
