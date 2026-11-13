@@ -190,8 +190,11 @@ const BF_R=['bf','bfc','bfh','bfl'];BF_R.forEach(r=>{Te.includes(r)||Te.push(r)}
 window.addEventListener('click',e=>{try{if(!m.logged||m.sheet||!BF_R.includes(m.route))return;const b=e.target&&e.target.closest&&e.target.closest('.screen > .sub-hdr > button:first-child');if(!b)return;e.preventDefault();e.stopImmediatePropagation();
  const h=m.hist||[];if(m.route!=='bf'){const up=m.route==='bfc'?(m.bfBack||'bf'):'bf';while(h.length&&BF_R.includes(h[h.length-1].route)&&h[h.length-1].route!==up)h.pop();if(h.length&&h[h.length-1].route===up)h.pop();return R(up,void 0,!0)}
  while(h.length&&(BF_R.includes(h[h.length-1].route)||h[h.length-1].route==='cat'&&h[h.length-1].cat==='bank'))h.pop();return R('cat','bank',!0)}catch(er){Hooks.err('bfback',er)}},!0);
+/* v275: easy to find — its own tab in «Деньги» (next to Финансы and Аналитика) and the card always shows */
+try{const L0={ru:'Butler Finance',de:'Butler Finance',en:'Butler Finance',pl:'Butler Finance',tr:'Butler Finance',fr:'Butler Finance',es:'Butler Finance'};for(const l in L0)if(tg[l])tg[l].bf=L0[l];
+ const hub=H9X.find(h=>h[0]==='money');if(hub&&!hub[1].includes('q:bf'))hub[1].splice(1,0,'q:bf');BD8K['q:bf']='chart'}catch(e){Hooks.err('bftab',e)}
 /* the card on the Finance front page */
-Hooks.on('render',()=>{try{if(g.bfoff)return;const sc=document.querySelector('.screen.kbcover');if(!sc||sc.querySelector('.bfcard'))return;const at=sc.querySelector('.st36m')||sc.querySelector('.st36ch');if(!at)return;
+Hooks.on('render',()=>{try{if(g.bfoff)return;const sc=document.querySelector('.screen.kbcover')||(m.route==='cat'&&m.cat==='bank'?document.querySelector('.screen'):null)||(m.route==='fin'?document.querySelector('.screen'):null);if(!sc||sc.querySelector('.bfcard'))return;const at=sc.querySelector('.st36m')||sc.querySelector('.st36ch')||sc.querySelector('.h9tabs')||sc.querySelector('.st32top')||sc.firstElementChild;if(!at)return;
  const t=document.createElement('template');t.innerHTML=`<button type="button" class="pin hbcard bfcard" data-act="go" data-to="bf"><span class="u1ic"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 19h16M6 16V9M10 16V5M14 16v-6M18 16V7"/></svg></span><span class="txt"><span class="t">${i(bft('title'))}</span><span class="s">${i(bft('card'))}</span></span>${_('chev','chev')}</button>`;at.after(t.content.firstChild)}catch(e){Hooks.err('bfcard',e)}});
 /* ---------- live inputs ---------- */
 let bfT=0;
