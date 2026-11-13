@@ -37,6 +37,7 @@ home/edit-in-place.js
 brand/greeting.js
 money/butler-finance.js
 money/prognoz-stage1.js
+money/prognoz-stage3.js
 iphone/headers-keep-height.js
 books/mirror-of-self.js
 home/tiles-one-tap.js
