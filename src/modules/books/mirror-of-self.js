@@ -115,14 +115,16 @@ const MIR_CONF=/(хочу|хотел|хотела|хотелось|мечтаю|
 const MIR_SELF=/(я\s+(не\s+могу|не\s+умею|ничего\s+не\s+стою|неудачни|глуп|слаб|ленив|никчём|хуже\s+всех)|ich\s+(kann\s+(das\s+)?nicht|bin\s+(dumm|faul|schwach|nichts\s+wert))|i\s+(can.?t|am\s+(stupid|lazy|weak|worthless)))/i;
 function mirSent(t){return String(t||'').replace(/\s+/g,' ').split(/(?<=[.!?…])\s+|\n+/).map(x=>x.trim()).filter(x=>x.length>2)}
 const mirCut=s=>s.length>220?s.slice(0,217)+'…':s;
-function mirStem(w){w=w.toLowerCase().replace(/ё/g,'е');return w.length>7?w.slice(0,6):w.length>5?w.slice(0,5):w}
+function mirStem(w){w=w.toLowerCase().replace(/ё/g,'е');return w.slice(0,Math.min(6,Math.max(4,w.length-2)))}
 function mirBase(note,all){const out=[];const src=all?mirLoad().notes.filter(n=>!mirSealed(n)||n.id===note.id):[note];
  const S=src.flatMap(n=>mirSent(n.t).map(s=>({nid:n.id,ts:n.ts,s})));const here=S.filter(x=>x.nid===note.id);
  const add=(type,key,title,why,ask,hits)=>{if(!hits.length)return;const uniq=[];hits.forEach(h=>{if(!uniq.some(u=>u.s===h.s))uniq.push(h)});out.push({type,key:type+':'+key,title,why,ask,q:uniq.slice(0,3).map(h=>({nid:h.nid,ts:h.ts,s:mirCut(h.s)}))})};
  /* repeated themes */
- const cnt={},word={};S.forEach(x=>{(x.s.toLowerCase().match(/[а-яёa-zäöüß]{5,}/g)||[]).forEach(w=>{if(MIR_STOP.has(w)||MIR_EMO.some(e=>e[1].test(w)))return;const k=mirStem(w);cnt[k]=(cnt[k]||0)+1;word[k]=word[k]||w})});
+ const cnt={},word={};S.forEach(x=>{(x.s.toLowerCase().match(/[а-яёa-zäöüß]{5,}/g)||[]).forEach(w=>{if(MIR_STOP.has(w)||MIR_EMO.some(e=>e[1].test(w)))return;const k=mirStem(w);cnt[k]=(cnt[k]||0)+1;(word[k]=word[k]||{})[w]=(word[k][w]||0)+1})});
+ /* the word as the person wrote it; a base form (работа, not работу) when one of the forms is it */
+ const base=k=>{const F=Object.entries(word[k]).sort((x,y)=>y[1]-x[1]).map(x=>x[0]);const ok=f=>!/(у|ю|е|и|ы|ой|ей|ом|ем|ам|ям|ах|ях|ами|ями|ого|его|ому|ему)$/.test(f);return F.find(f=>ok(f)&&/[бвгджзклмнпрстфхцчшщ]$/.test(f))||F.find(f=>ok(f)&&/ь$/.test(f))||(()=>{const om=F.find(f=>f.length>5&&/[бвгджзклмнпрстфхцчшщ]ом$/.test(f));return om&&!F.some(f=>/ой$/.test(f))?om.slice(0,-2):''})()||F.find(ok)||F[0]};
  Object.keys(cnt).filter(k=>cnt[k]>=(all?3:2)&&here.some(x=>mirStem2(x.s).includes(k))).sort((a,b)=>cnt[b]-cnt[a]).slice(0,3).forEach(k=>{
-  const w=word[k];add('theme',k,cv5n([`Похоже, тема «${w}» для вас сейчас важна. Так ли это?`,`Das Thema «${w}» scheint Ihnen gerade wichtig. Stimmt das?`,`The theme “${w}” seems important to you now. Is it?`]),
+  const w=base(k);add('theme',k,cv5n([`Слово «${w}» повторяется чаще других. Похоже, эта тема для вас сейчас важна. Так ли это?`,`Das Thema «${w}» scheint Ihnen gerade wichtig. Stimmt das?`,`The theme “${w}” seems important to you now. Is it?`]),
    cv5n([`Слово повторяется ${all?'в ваших записях':'в этой записи'}: ${cnt[k]}.`,`Das Wort wiederholt sich: ${cnt[k]}.`,`The word repeats: ${cnt[k]}.`]),
    cv5n([`Что для вас стоит за словом «${w}»?`,`Was steht für Sie hinter «${w}»?`,`What lies behind “${w}” for you?`]),S.filter(x=>mirStem2(x.s).includes(k)))});
  /* feelings */
