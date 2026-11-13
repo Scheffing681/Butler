@@ -1,0 +1,27 @@
+/* v239: edge finder — works also for white paper on a light table: looks for the four long straight borders of the sheet */
+function scEdges(src,sw,sh,side){const k=side/Math.max(sw,sh),w=Math.max(8,Math.round(sw*k)),h=Math.max(8,Math.round(sh*k));const cv=document.createElement('canvas');cv.width=w;cv.height=h;const x=cv.getContext('2d',{willReadFrequently:!0});x.drawImage(src,0,0,w,h);
+ const d=x.getImageData(0,0,w,h).data,n=w*h;let L=scLum(d,n);L=scBox(scBox(L,w,h,1),w,h,1);const M=new Float32Array(n),A=new Float32Array(n);
+ for(let y=1;y<h-1;y++)for(let x2=1;x2<w-1;x2++){const p=y*w+x2;const gx=(L[p-w+1]+2*L[p+1]+L[p+w+1])-(L[p-w-1]+2*L[p-1]+L[p+w-1]),gy=(L[p+w-1]+2*L[p+w]+L[p+w+1])-(L[p-w-1]+2*L[p-w]+L[p-w+1]);M[p]=Math.hypot(gx,gy);A[p]=Math.atan2(gy,gx)}
+ const srt=Float32Array.from(M).sort();const thr=Math.max(8,srt[Math.floor(n*.8)]);
+ const NT=180,diag=Math.ceil(Math.hypot(w,h)),NR=2*diag+1,acc=new Float32Array(NT*NR),CS=new Float32Array(NT),SN=new Float32Array(NT);for(let t=0;t<NT;t++){CS[t]=Math.cos(t*Math.PI/NT);SN[t]=Math.sin(t*Math.PI/NT)}
+ for(let y=2;y<h-2;y++)for(let x2=2;x2<w-2;x2++){const p=y*w+x2,m=M[p];if(m<thr)continue;let a=A[p];if(a<0)a+=Math.PI;const t0=Math.round(a/Math.PI*NT);const wt=Math.min(m,thr*4);
+  for(let dt=-5;dt<=5;dt++){const t=((t0+dt)%NT+NT)%NT;const r=Math.round(x2*CS[t]+y*SN[t])+diag;acc[t*NR+r]+=wt}}
+ const peaks=[];for(let t=0;t<NT;t++)for(let r=0;r<NR;r++){const v=acc[t*NR+r];if(v<thr*8)continue;let mx=!0;for(let dt=-4;dt<=4&&mx;dt++)for(let dr=-6;dr<=6;dr++){if(!dt&&!dr)continue;const tt=t+dt,rr=r+dr;let T2=tt,R2=rr;if(tt<0){T2=tt+NT;R2=2*diag-rr}else if(tt>=NT){T2=tt-NT;R2=2*diag-rr}if(R2<0||R2>=NR)continue;if(acc[T2*NR+R2]>v){mx=!1;break}}if(mx)peaks.push([v,t,r-diag])}
+ peaks.sort((a,b)=>b[0]-a[0]);const V=[],Hh=[];for(const[v,t,r]of peaks){const th=t*Math.PI/NT,isV=Math.abs(Math.cos(th))>Math.abs(Math.sin(th)),G=isV?V:Hh;if(G.length<14)G.push({c:Math.cos(th),s:Math.sin(th),r});if(V.length>=14&&Hh.length>=14)break}
+ const X=(a,b)=>{const den=a.c*b.s-a.s*b.c;if(Math.abs(den)<1e-6)return null;return[(a.r*b.s-b.r*a.s)/den,(a.c*b.r-b.c*a.r)/den]};
+ const sup=(P,Q)=>{const len=Math.hypot(Q[0]-P[0],Q[1]-P[1]);if(len<8)return 0;const nx=-(Q[1]-P[1])/len,ny=(Q[0]-P[0])/len;let ok=0,N=48;for(let j=0;j<N;j++){const t=(j+.5)/N;let best=0;for(let o=-2;o<=2;o++){const xx=Math.round(P[0]+(Q[0]-P[0])*t+nx*o),yy=Math.round(P[1]+(Q[1]-P[1])*t+ny*o);if(xx<1||yy<1||xx>=w-1||yy>=h-1)continue;const pp=yy*w+xx;if(M[pp]>=thr*.4){const al=Math.abs(Math.cos(A[pp])*nx+Math.sin(A[pp])*ny);if(al>.85)best=1}}ok+=best}return ok/N};
+ const score=q=>{const o=scOrder(q);const ar=scArea(o)/n;if(ar<.12||ar>.995)return null;for(const p of o)if(p[0]<-w*.03||p[1]<-h*.03||p[0]>w*1.03||p[1]>h*1.03)return null;
+  for(let j=0;j<4;j++){const a=o[j],b=o[(j+1)%4],c=o[(j+2)%4];const cr=(b[0]-a[0])*(c[1]-b[1])-(b[1]-a[1])*(c[0]-b[0]);if(cr<=0)return null;const v1=[a[0]-b[0],a[1]-b[1]],v2=[c[0]-b[0],c[1]-b[1]];const cs=(v1[0]*v2[0]+v1[1]*v2[1])/Math.hypot(...v1)/Math.hypot(...v2);if(Math.abs(cs)>.5)return null}
+  const S=[0,1,2,3].map(j=>sup(o[j],o[(j+1)%4]));const mn=Math.min(...S),me=S.reduce((a,b)=>a+b)/4;if(mn<.35)return null;
+  const cx=(o[0][0]+o[1][0]+o[2][0]+o[3][0])/4,cy=(o[0][1]+o[1][1]+o[2][1]+o[3][1])/4,smp=[];for(let a=0;a<=10;a++)for(let b=0;b<=10;b++){const u=.15+.7*a/10,v=.15+.7*b/10;const xx=Math.round((1-u)*(1-v)*o[0][0]+u*(1-v)*o[1][0]+u*v*o[2][0]+(1-u)*v*o[3][0]),yy=Math.round((1-u)*(1-v)*o[0][1]+u*(1-v)*o[1][1]+u*v*o[2][1]+(1-u)*v*o[3][1]);if(xx>=0&&yy>=0&&xx<w&&yy<h)smp.push(L[yy*w+xx])}smp.sort((a,b)=>a-b);const pb=smp[Math.floor(smp.length*.8)]||1;
+  let bf=1;for(let j=0;j<4;j++){const P=o[j],Q=o[(j+1)%4],len=Math.hypot(Q[0]-P[0],Q[1]-P[1]);let nx=-(Q[1]-P[1])/len,ny=(Q[0]-P[0])/len;if(nx*(cx-(P[0]+Q[0])/2)+ny*(cy-(P[1]+Q[1])/2)<0){nx=-nx;ny=-ny}const B=[],O=[];for(let t=.1;t<=.9;t+=.04)for(let off=4;off<=8;off+=2){const bx=P[0]+(Q[0]-P[0])*t,by=P[1]+(Q[1]-P[1])*t;let xx=Math.round(bx+nx*off),yy=Math.round(by+ny*off);if(xx>=0&&yy>=0&&xx<w&&yy<h)B.push(L[yy*w+xx]);xx=Math.round(bx-nx*off);yy=Math.round(by-ny*off);if(xx>=0&&yy>=0&&xx<w&&yy<h)O.push(L[yy*w+xx])}B.sort((a,b)=>a-b);O.sort((a,b)=>a-b);const iv=B[Math.floor(B.length*.7)]||0,r=iv/pb;bf*=Math.max(.08,Math.min(1,(r-.8)/.1));}
+  return{o,sc:(mn*.6+me*.4)*Math.pow(ar,.6)*bf,mn,me,bf}};
+ let best=null;for(let a=0;a<V.length;a++)for(let b=a+1;b<V.length;b++)for(let c=0;c<Hh.length;c++)for(let e=c+1;e<Hh.length;e++){const q=[X(V[a],Hh[c]),X(V[b],Hh[c]),X(V[b],Hh[e]),X(V[a],Hh[e])];if(q.some(z=>!z))continue;const r=score(q);if(r&&(!best||r.sc>best.sc))best=r}
+ return{best,score,w,h,V,Hh,X,M,A,thr,L}}
+function scDetect(src,sw,sh,side){let seg=null,ed=null;try{seg=scSeg(src,sw,sh,side)}catch{}try{ed=scEdges(src,sw,sh,Math.min(side,420))}catch{}
+ let segS=null;if(seg&&ed){const q=seg.q.map(p=>[p[0]*ed.w,p[1]*ed.h]);segS=ed.score(q)}
+ if(seg&&seg.clean){seg.conf=Math.max(.6,segS?segS.mn:.6);return seg}
+ const e=ed&&ed.best;if(e&&(!segS||e.sc>segS.sc*1.08)){/* the segmented mask only helps with bent edges when it agrees with the found borders */
+  let agree=!1;if(seg){const qs=scOrder(seg.q.map(p=>[p[0]*ed.w,p[1]*ed.h]));agree=qs.every((p,j)=>Math.hypot(p[0]-e.o[j][0],p[1]-e.o[j][1])<Math.max(ed.w,ed.h)*.03)}
+  return{q:e.o.map(p=>[p[0]/ed.w,p[1]/ed.h]),mask:agree?seg.mask:null,mw:agree?seg.mw:0,mh:agree?seg.mh:0,fill:scArea(e.o)/(ed.w*ed.h),conf:e.mn}}
+ if(seg){seg.conf=segS?segS.mn:.3;return seg}return null}

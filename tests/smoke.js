@@ -20,6 +20,8 @@ const srv=http.createServer((q,r)=>{const u=decodeURIComponent(q.url.split('?')[
 /* ---------- checks ---------- */
 const results=[];let failed=0;
 const check=(name,ok,detail)=>{results.push([ok?'PASS':'FAIL',name,detail||'']);if(!ok)failed++};
+/* app.js must be exactly what src/ builds — nobody edits app.js by hand */
+{const {execFileSync}=require('child_process');let ok=true;try{execFileSync(process.execPath,[path.join(ROOT,'build.js'),'--check'],{stdio:'pipe'})}catch{ok=false}check('app.js is built from src/',ok,ok?'':'run node build.js')}
 
 (async()=>{await new Promise(r=>srv.listen(0,r));const URL0=`http://localhost:${srv.address().port}/index.html`;
  const b=await chromium.launch({executablePath:CHROME,args:['--no-sandbox']});
