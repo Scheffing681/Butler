@@ -27,6 +27,7 @@
 | `scanner/` | the document scanner |
 | `kits/` | ready-made style sets (hidden) |
 | `travel/` | real Earth colours on the travel globe and map |
+| `books/` | «Зеркало себя»: free writing, analysis only on request, portrait and plan |
 | `backup/` | data protection, safety copy, restore the latest copy |
 
 ## One connection point (Hooks)
