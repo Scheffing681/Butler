@@ -8,6 +8,7 @@ try{
  $=(f=>function(){const r=f.apply(this,arguments);Hooks.run('save');return r})($);
  h9has=(f=>function(k){return f.apply(this,arguments)&&Hooks.ask('section',k)})(h9has);
  x_=(f=>function(){return(f.apply(this,arguments)||[]).filter(k=>Hooks.ask('section',k))})(x_);
+ td9find=(f=>function(q){return Hooks.run('search',f.apply(this,arguments)||[],q)})(td9find);
  hl=(f=>async function(n,d){const ok=await f.apply(this,arguments);Hooks.run('file',ok,n,d);return ok})(hl);
 }catch(e){try{Hooks.err('install',e)}catch{}}
 /* the same 'screen' hook for inner screens (each on its own, so one failure cannot stop the others) */

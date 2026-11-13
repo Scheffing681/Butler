@@ -117,6 +117,14 @@ const check=(name,ok,detail)=>{results.push([ok?'PASS':'FAIL',name,detail||'']);
  await T(()=>document.querySelectorAll('.sheet,.ovl,.sheet-bg').forEach(x=>x.remove()));
  await T(()=>{const g=window.__T.g();g.mail.find(l=>l.id==='lk1test').status='done';window.__T.save()});await p.waitForTimeout(200);check('closed letter → task done',await T(()=>!!window.__T.g().tasks.find(q=>q.ml==='lk1test'&&q.done)));
  await T(()=>{const g=window.__T.g();g.mail=g.mail.filter(l=>l.id!=='lk1test');g.tasks=g.tasks.filter(q=>q.ml!=='lk1test');window.__T.save();window.__T.R('home')});await p.waitForTimeout(300)}
+ /* one search + undo (v264) */
+ where='search and undo';{await T(()=>{const g=window.__T.g();g.mail=g.mail||[];g.mail.unshift({id:'os1m',ts:Date.now(),text:'Kfz Beitrag',status:'closed',from:'Allianz Versicherung',due:'',req:[],kinds:[]});g.projects=g.projects||[];window.__T.save()});
+ await T(()=>window.__T.R('search'));await p.waitForTimeout(400);await p.locator('#sq').fill('Allianz');await p.waitForTimeout(700);
+ check('search finds incoming letters',await T(()=>!!document.querySelector('#sres [data-act=lk1open][data-id=os1m]')));
+ await T(()=>{const g=window.__T.g();g.mail=g.mail.filter(l=>l.id!=='os1m');window.__T.save()});await p.waitForTimeout(300);
+ check('deleting shows «Вернуть»',await T(()=>!!document.querySelector('.un1 button')));
+ await T(()=>document.querySelector('.un1 button').click());await p.waitForTimeout(300);check('«Вернуть» brings the record back',await T(()=>!!window.__T.g().mail.find(l=>l.id==='os1m')));
+ await T(()=>{const g=window.__T.g();g.un1off=1;g.mail=g.mail.filter(l=>l.id!=='os1m');window.__T.save();g.un1off=0;document.querySelectorAll('.un1').forEach(x=>x.remove());window.__T.R('home')});await p.waitForTimeout(300)}
  where='end';check('no errors in the app',!errs.length,errs.slice(0,8).join(' || '));
  const he=await T(()=>window.__T.Hooks.errors);check('no errors inside hooks',!he.length,JSON.stringify(he).slice(0,300));
  await b.close();srv.close();fs.rmSync(TMP,{recursive:true,force:true});

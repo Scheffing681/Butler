@@ -32,4 +32,5 @@ money/one-finance.js
 tasks/projects-in-tasks.js
 sections/no-twins.js
 links/letter-to-task.js
+links/search-and-undo.js
 hooks/install.js
