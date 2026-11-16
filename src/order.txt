@@ -45,6 +45,7 @@ notes/einkauf2.js
 notes/einkauf-scan.js
 notes/recipe-book.js
 notes/meal-plan.js
+notes/pantry.js
 iphone/headers-keep-height.js
 iphone/theme-resync.js
 books/mirror-of-self.js

@@ -92,7 +92,7 @@ function rcBook(){const q=(m.rcQ||'').trim().toLowerCase(),c=m.rcC||'all',sel=m.
  const nSel=Object.keys(sel).filter(k=>sel[k]).length;
  const card=r=>{const ph=rcPhoto(r.id);return`<div class="rzbcard${sel[r.id]?' on':''}"><button type="button" class="rzbck" data-act="rzbsel" data-id="${i(r.id)}" aria-label="✓">${sel[r.id]?'✓':''}</button><button type="button" class="rzbbody" data-act="rzbopen" data-id="${i(r.id)}">${ph?`<img src="${ph}" alt="">`:`<span class="rzbph">${r.src==='butler'?'🥗':'🍲'}</span>`}<span class="rzbt"><b>${i(r.t)}</b><small>${i(rct('porN',{n:r.por||1}))}${r.time?' · '+i(rct('min',{n:r.time})):''} · ${(r.ing||[]).length} ${i(rct('ing').toLowerCase())}</small></span>${r.fav?'<em>★</em>':''}</button></div>`};
  return`<div class="screen rzbv0">${rcHdr(rct('book'),`<button class="iconbtn" data-act="rzbnew" aria-label="+">＋</button>`)}
- ${typeof mpBookCard==='function'?mpBookCard():''}
+ <div class="mpcards">${typeof mpBookCard==='function'?mpBookCard():''}${typeof pzBookCard==='function'?pzBookCard():''}</div>
  <input class="field rzbq" type="search" placeholder="🔍 ${i(rct('find'))}" value="${i(m.rcQ||'')}" data-rcq="1">
  <div class="rzbchips">${chips.map(([k,t])=>`<button type="button" class="${c===k?'on':''}" data-act="rzbcat" data-k="${k}">${i(t)}</button>`).join('')}</div>
  ${L.length?`<div class="rzblist">${L.map(card).join('')}</div>`:`<p class="rzbnone">${i(q?rct('none'):rct('empty'))}</p>`}
@@ -137,9 +137,9 @@ function rcCook(){const r=rcGet(m.rcId);if(!r)return rcBook();const K=m.rcK||(m.
 const rcRe=()=>{try{k3keep(()=>v())}catch{try{v()}catch{}}};
 /* back: cooking → recipe → book → where the book was opened from */
 function rcBack(){const r=m.route;if(r==='rck'){rcWake(!1);R('rcv',void 0,!0);return}if(r==='rce'){const d=m.rcDraft;m.rcDraft=null;if(d&&d.id&&rcGet(d.id)){m.rcId=d.id;R('rcv',void 0,!0)}else R('rcb',void 0,!0);return}
- if(r==='rcv'){if(m.rcvFrom==='rcw'){m.rcvFrom='';R('rcw',void 0,!0);return}R('rcb',void 0,!0);return}if(r==='rcw'){const f=m.mpFrom;m.mpFrom='';if(f&&f!=='rcb'&&f!=='rcw'){R(f,void 0,!0);return}R('rcb',void 0,!0);return}const to=m.rcFrom||'kblist';m.rcFrom='';if(to==='sx'){R('sxnut',void 0,!0);return}R(to==='home'?'home':to,void 0,!0)}
+ if(r==='rcv'){if(m.rcvFrom==='rcw'||m.rcvFrom==='rcp'){const f=m.rcvFrom;m.rcvFrom='';R(f,void 0,!0);return}R('rcb',void 0,!0);return}if(r==='rcp'){R('rcb',void 0,!0);return}if(r==='rcw'){const f=m.mpFrom;m.mpFrom='';if(f&&f!=='rcb'&&f!=='rcw'){R(f,void 0,!0);return}R('rcb',void 0,!0);return}const to=m.rcFrom||'kblist';m.rcFrom='';if(to==='sx'){R('sxnut',void 0,!0);return}R(to==='home'?'home':to,void 0,!0)}
 Hooks.act('rzbback',rcBack);
-window.addEventListener('click',e=>{try{if(!/^rc[bvekw]$/.test(m.route||''))return;const b=e.target.closest&&e.target.closest('.screen > .sub-hdr > button:first-child');if(!b)return;e.preventDefault();e.stopImmediatePropagation();rcBack()}catch{}},!0);
+window.addEventListener('click',e=>{try{if(!/^rc[bvekwp]$/.test(m.route||''))return;const b=e.target.closest&&e.target.closest('.screen > .sub-hdr > button:first-child');if(!b)return;e.preventDefault();e.stopImmediatePropagation();rcBack()}catch{}},!0);
 Hooks.act('rzbbook',()=>{m.rcFrom=m.route==='kblist'?'kblist':m.route==='sxnut'?'sx':m.route||'kblist';R('rcb')});
 Hooks.act('rzbcat',e=>{m.rcC=e.k;rcRe()});
 Hooks.act('rzbsel',e=>{const s=m.rcSel||(m.rcSel={});s[e.id]=!s[e.id];rcRe()});
@@ -189,10 +189,10 @@ document.addEventListener('change',async e=>{const t=e.target;if(!t||!t.dataset|
 document.addEventListener('change',async e=>{const t=e.target;if(!t||!t.dataset||!t.dataset.rcphoto)return;const f=t.files&&t.files[0];if(!f)return;try{const b=await createImageBitmap(f),k=Math.min(1,640/Math.max(b.width,b.height)),c=document.createElement('canvas');c.width=Math.round(b.width*k);c.height=Math.round(b.height*k);c.getContext('2d').drawImage(b,0,0,c.width,c.height);const d=m.rcDraft||(m.rcDraft={});d.photo=c.toDataURL('image/jpeg',0.72);rcRe()}catch(er){Hooks.err('rcphoto',er)}},!0);
 /* ---- recipes → shopping list ---- */
 function rcMerge(picks){const M=new Map();picks.forEach(({r,por})=>{const f=por/(r.por||1);(r.ing||[]).forEach(x=>{const b=rcBase({a:x.a==null?null:x.a*f,u:x.u}),key=x.n.toLowerCase().replace(/\s+/g,' ').trim()+'|'+b.k;
-  const o=M.get(key)||{n:x.n,k:b.k,v:0,u:b.u||x.u,from:new Set(),on:!RC_BASIC.test(x.n.trim())};if(b.v!=null)o.v+=b.v;o.from.add(r.t);M.set(key,o)})});return[...M.values()]}
+  const o=M.get(key)||{n:x.n,k:b.k,v:0,u:b.u||x.u,from:new Set(),on:!RC_BASIC.test(x.n.trim())};if(b.v!=null)o.v+=b.v;o.from.add(r.t);M.set(key,o)})});const out=[...M.values()];return typeof pzApply==='function'?pzApply(out):out}
 function rcListSheet(picks){const items=rcMerge(picks);const sh=H(rct('listT'),'<div class="rzbls"></div>',()=>{}),box=sh.querySelector('.rzbls');
  const draw=()=>{box.innerHTML=`<p class="fdsmall">${i(rct('listH'))}</p>${picks.length>1||1?`<div class="rzblsp">${picks.map((p,j)=>`<div><span>${i(p.r.t)}</span><button type="button" data-pp="${j}" data-d="-1">−</button><b>${p.por}</b><button type="button" data-pp="${j}" data-d="1">+</button></div>`).join('')}</div>`:''}
-  <div class="rzblsi">${items.map((o,j)=>`<button type="button" class="${o.on?'on':''}" data-ii="${j}"><i>${o.on?'✓':''}</i><span>${i(o.n)}${!o.on&&RC_BASIC.test(o.n.trim())?` <small>${i(rct('home'))}</small>`:''}</span><b>${i(rcShow(o.k,o.v||null,o.u))}</b></button>`).join('')}</div>
+  <div class="rzblsi">${items.map((o,j)=>`<button type="button" class="${o.on?'on':''}" data-ii="${j}"><i>${o.on?'✓':''}</i><span>${i(o.n)}${!o.on&&RC_BASIC.test(o.n.trim())?` <small>${i(rct('home'))}</small>`:''}${o.pz?` <small class="pz">${i(o.pz)}</small>`:''}</span><b>${i(rcShow(o.k,o.v||null,o.u))}</b></button>`).join('')}</div>
   <button type="button" class="rzbbig" data-go>${i(rct('toListN',{n:items.filter(o=>o.on).length}))}</button>`;
   box.querySelectorAll('[data-pp]').forEach(b=>b.onclick=()=>{const p=picks[+b.dataset.pp];p.por=Math.max(1,Math.min(50,p.por+(+b.dataset.d)));const keep=new Map(items.map(o=>[o.n.toLowerCase()+'|'+o.k,o.on]));items.splice(0,items.length,...rcMerge(picks));items.forEach(o=>{const k=o.n.toLowerCase()+'|'+o.k;if(keep.has(k))o.on=keep.get(k)});draw()});
   box.querySelectorAll('[data-ii]').forEach(b=>b.onclick=()=>{const o=items[+b.dataset.ii];o.on=!o.on;draw()});
@@ -206,7 +206,7 @@ Hooks.act('rzbonelist',()=>{const r=rcGet(m.rcId);if(r)rcListSheet([{r,por:rcPor
 let rcLock=null;async function rcWake(on){try{if(on){if(!rcLock&&navigator.wakeLock)rcLock=await navigator.wakeLock.request('screen')}else if(rcLock){await rcLock.release();rcLock=null}}catch{rcLock=null}}
 document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible'&&m.route==='rck'){rcLock=null;rcWake(!0)}});
 Hooks.act('rzbcook',()=>{m.rcK={step:-1,done:{}};R('rck');rcWake(!0)});
-Hooks.act('rzbstep',e=>{const r=rcGet(m.rcId),K=m.rcK||(m.rcK={step:-1,done:{}});const n=(r&&r.steps||[]).length;K.step=Math.max(-1,Math.min(n,K.step+(+e.d||0)));if(n===0&&+e.d>0)K.step=0;rcRe();try{window.scrollTo(0,0)}catch{}});
+Hooks.act('rzbstep',e=>{const r=rcGet(m.rcId),K=m.rcK||(m.rcK={step:-1,done:{}});const n=(r&&r.steps||[]).length;K.step=Math.max(-1,Math.min(n,K.step+(+e.d||0)));if(n===0&&+e.d>0)K.step=0;if(r&&K.step>=n&&n>0&&!K.pz&&typeof pzUse==='function'){K.pz=1;try{const u=pzUse(r,rcPorOf(r)/(r.por||1));if(u){$();T(pzt('used',{n:u}))}}catch{}}rcRe();try{window.scrollTo(0,0)}catch{}});
 Hooks.act('rzbkdone',e=>{const K=m.rcK||(m.rcK={step:-1,done:{}});K.done[e.j]=!K.done[e.j];rcRe()});
 Hooks.act('rzbtm',e=>{const r=rcGet(m.rcId);m.rcTm={end:Date.now()+(+e.n||1)*60000,l:(r?r.t+' · ':'')+rct('stepN',{a:(m.rcK||{}).step+1,b:(r&&r.steps||[]).length})};rcRe()});
 Hooks.act('rzbtmx',()=>{m.rcTm=null;rcRe()});
