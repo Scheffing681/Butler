@@ -1,0 +1,89 @@
+/* ===== v281 «Финансовая книга» in the owner's design =====
+   The book (the former cover, opened from the Butler Finance home) now starts with:
+   an own drawing, Месяц · Квартал · Год with ‹ period ›, three cards Доходы · Расходы · Остаток,
+   «План на …» — the four Kakeibo baskets plus Накопления, each with a bar «spent of limit» (tap to set a limit),
+   and the button «Добавить расход / закупку». Limits are per month (×3 for a quarter, ×12 for a year), kept in g.fin.plan2.
+   The older pills and the basket strip are hidden here because the plan shows the same numbers. */
+const f3S={
+ tag:['Kakebo — осознанные деньги','Kakebo – bewusst mit Geld','Kakebo – mindful money','Kakebo – świadome pieniądze','Kakebo – bilinçli para','Kakebo – l’argent en conscience','Kakebo: dinero consciente'],
+ m:['Месяц','Monat','Month','Miesiąc','Ay','Mois','Mes'],q:['Квартал','Quartal','Quarter','Kwartał','Çeyrek','Trimestre','Trimestre'],y:['Год','Jahr','Year','Rok','Yıl','Année','Año'],
+ inc:['Доходы','Einnahmen','Income','Przychody','Gelir','Revenus','Ingresos'],exp:['Расходы','Ausgaben','Spending','Wydatki','Gider','Dépenses','Gastos'],rest:['Остаток','Rest','Left','Zostaje','Kalan','Reste','Resto'],
+ planM:['План на месяц','Monatsplan','Plan for the month','Plan na miesiąc','Aylık plan','Plan du mois','Plan del mes'],planQ:['План на квартал','Quartalsplan','Plan for the quarter','Plan na kwartał','Çeyrek planı','Plan du trimestre','Plan del trimestre'],planY:['План на год','Jahresplan','Plan for the year','Plan na rok','Yıllık plan','Plan de l’année','Plan del año'],
+ need:['Нужное','Notwendiges','Needs','Potrzeby','İhtiyaç','Nécessaire','Necesario'],want:['Желания','Wünsche','Wants','Zachcianki','İstekler','Envies','Deseos'],cult:['Культура','Kultur','Culture','Kultura','Kültür','Culture','Cultura'],extra:['Неожиданное','Unerwartetes','Unexpected','Nieoczekiwane','Beklenmedik','Imprévu','Imprevistos'],
+ save:['Накопления','Sparen','Savings','Oszczędności','Birikim','Épargne','Ahorro'],
+ set:['задать лимит','Limit setzen','set a limit','ustaw limit','limit belirle','fixer une limite','fijar límite'],
+ lim:['Лимит в месяц','Limit pro Monat','Limit per month','Limit miesięczny','Aylık limit','Limite par mois','Límite al mes'],goal:['Цель в месяц','Ziel pro Monat','Target per month','Cel miesięczny','Aylık hedef','Objectif par mois','Meta al mes'],
+ ok:['Готово','Fertig','Done','Gotowe','Tamam','OK','Listo'],
+ add:['Добавить расход / закупку','Ausgabe / Einkauf hinzufügen','Add expense / purchase','Dodaj wydatek / zakup','Harcama / alışveriş ekle','Ajouter dépense / achat','Añadir gasto / compra'],
+ saveT:['остаток периода','Rest des Zeitraums','what is left in the period','reszta okresu','dönem kalanı','reste de la période','resto del periodo']};
+const f3t=k=>cv5n(f3S[k]);
+const F3ART=`<svg class="f3art" viewBox="0 0 340 120" preserveAspectRatio="xMidYMax slice" aria-hidden="true"><defs><linearGradient id="f3sky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fdf3ee"/><stop offset="1" stop-color="#eef8f0"/></linearGradient></defs>
+<rect width="340" height="120" fill="url(#f3sky)"/><circle cx="170" cy="48" r="20" fill="#f6a48a" opacity=".85"/>
+<path d="M90 120l62-62c5-5 11-5 16 0l22 22 14-12c5-4 10-4 15 1l51 51z" fill="#b9dcc2"/><path d="M142 68l10-10c5-5 11-5 16 0l11 11-9 4-8-6-7 6z" fill="#fff" opacity=".9"/>
+<path d="M0 120V96c40-14 80-12 120 0s90 12 130-2 60-10 90-2v28z" fill="#8cc79c"/><path d="M0 120v-10c50-12 110-8 170 0s120 6 170-4v14z" fill="#5fae76"/>
+<g fill="#2f7d49"><path d="M44 104l9-22 9 22zM47 92l6-15 6 15z"/><path d="M276 100l8-20 8 20zM279 89l5-13 5 13z"/><path d="M300 106l7-17 7 17z"/></g>
+<g><rect x="228" y="88" width="20" height="14" fill="#fff"/><path d="M224 89l14-11 14 11z" fill="#c9624e"/><rect x="236" y="94" width="5" height="8" fill="#8a6d5a"/></g>
+<g fill="#f3b6c0"><circle cx="26" cy="38" r="5"/><circle cx="36" cy="30" r="6"/><circle cx="18" cy="28" r="4"/><circle cx="312" cy="34" r="5"/><circle cx="322" cy="44" r="4"/></g><path d="M0 48c12-4 22-8 34-16M340 52c-10-3-16-8-24-16" stroke="#8a6d5a" stroke-width="2" fill="none" stroke-linecap="round"/></svg>`;
+const f3Range=()=>{const p=m.f3p||'m',o=m.f3o||0,n=new Date();let a,b,lab;
+ if(p==='y'){const yy=n.getFullYear()+o;a=new Date(yy,0,1);b=new Date(yy+1,0,1);lab=String(yy)}
+ else if(p==='q'){const q0=Math.floor(n.getMonth()/3)+o,a0=new Date(n.getFullYear(),q0*3,1);a=a0;b=new Date(a0.getFullYear(),a0.getMonth()+3,1);lab='Q'+(Math.floor(a0.getMonth()/3)+1)+' '+a0.getFullYear()}
+ else{a=new Date(n.getFullYear(),n.getMonth()+o,1);b=new Date(a.getFullYear(),a.getMonth()+1,1);lab=a.toLocaleDateString(he(),{month:'long',year:'numeric'});lab=lab.charAt(0).toUpperCase()+lab.slice(1)}
+ return{r:[x(a),x(b)],lab,k:p==='y'?12:p==='q'?3:1}};
+function f3Block(){const R0=f3Range(),S=us(R0.r),F=U(),P=F.plan2||{},p=m.f3p||'m',rest=S.inc-S.exp;
+ const row=(k,spent)=>{const lim=(+P[k]||0)*100*R0.k,over=lim>0&&(k==='save'?!1:spent>lim),pct=lim>0?Math.min(100,Math.round(Math.max(0,spent)/lim*100)):0;
+  if(m.f3ed===k)return`<div class="f3row ed"><label><span>${i(f3t(k))} · ${i(f3t(k==='save'?'goal':'lim'))}</span><span class="f3in"><input type="number" inputmode="decimal" min="0" value="${P[k]||''}" data-f3lim="${k}"><em>${i(F.cur||'')}</em></span></label><button type="button" class="btn primary" data-act="f3ok">${i(f3t('ok'))}</button></div>`;
+  return`<button type="button" class="f3row${over?' over':''}" data-act="f3ed" data-k="${k}"><span class="f3l">${i(f3t(k))}${k==='save'?` <small>${i(f3t('saveT'))}</small>`:''}</span><b>${i(B(Math.max(0,spent)))}${lim>0?` <small>/ ${i(B(lim))}</small>`:` <small class="f3set">${i(f3t('set'))}</small>`}</b><span class="f3bar"><i style="width:${pct}%"></i></span></button>`};
+ return`<div class="f3" data-f3="1">${F3ART}<p class="f3tag">${i(f3t('tag'))}</p>
+ <div class="f3seg">${['m','q','y'].map(k=>`<button type="button" class="${p===k?'on':''}" data-act="f3p" data-k="${k}">${i(f3t(k))}</button>`).join('')}</div>
+ <div class="f3nav"><button type="button" data-act="f3o" data-d="-1" aria-label="prev">‹</button><b>${i(R0.lab)}</b><button type="button" data-act="f3o" data-d="1" aria-label="next"${(m.f3o||0)>=0?' disabled':''}>›</button></div>
+ <div class="f3tri"><div class="inc"><small>${i(f3t('inc'))}</small><b>${i(B(S.inc))}</b></div><div class="exp"><small>${i(f3t('exp'))}</small><b>${i(B(S.exp))}</b></div><div class="rest${rest<0?' neg':''}"><small>${i(f3t('rest'))}</small><b>${i(B(rest))}</b></div></div>
+ <h3 class="f3h">${i(f3t(p==='y'?'planY':p==='q'?'planQ':'planM'))}</h3>
+ <div class="f3plan">${['need','want','cult','extra'].map(k=>row(k,S.byP[k]||0)).join('')}${row('save',rest)}</div>
+ <button type="button" class="f3add" data-act="kbnew" data-k="expense">＋ ${i(f3t('add'))}</button></div>`}
+Hooks.on('render',()=>{try{if(g.fin2off||m.route!=='cat'||m.cat!=='bank'||m.f2v!=='book')return;const sc=document.querySelector('.screen.kbcover');if(!sc||sc.querySelector('[data-f3]'))return;sc.classList.add('f3on');
+ const d=document.createElement('div');d.innerHTML=f3Block();const el=d.firstElementChild,after=sc.querySelector('.h9tabs')||sc.querySelector('.st32top');if(after&&after.parentNode===sc)sc.insertBefore(el,after.nextSibling);else sc.insertBefore(el,sc.firstChild);
+ if(m.f3ed){const inp=sc.querySelector('[data-f3lim]');inp&&inp.focus()}}catch(e){Hooks.err('f3book',e)}});
+const f3Re=()=>{try{k3keep(()=>v())}catch{try{v()}catch{}}};
+Hooks.act('f3p',e=>{m.f3p=e.k;m.f3o=0;m.f3ed='';f3Re()});
+Hooks.act('f3o',e=>{m.f3o=Math.min(0,(m.f3o||0)+(+e.d||0));f3Re()});
+Hooks.act('f3ed',e=>{m.f3ed=e.k;f3Re()});
+Hooks.act('f3ok',()=>{const inp=document.querySelector('[data-f3lim]');if(inp){const F=U();F.plan2=F.plan2||{};const n=parseFloat(String(inp.value).replace(',','.'));if(n>0)F.plan2[inp.dataset.f3lim]=Math.round(n*100)/100;else delete F.plan2[inp.dataset.f3lim];$()}m.f3ed='';f3Re()});
+document.addEventListener('keydown',e=>{const t=e.target;if(e.key==='Enter'&&t&&t.dataset&&t.dataset.f3lim){e.preventDefault();const b=document.querySelector('[data-act=f3ok]');b&&b.click()}},!0);
+Hooks.css('finance-book',`
+.kbcover.f3on .st36ch,.kbcover.f3on .st36k,.kbcover.f3on .st36bar,.kbcover.f3on .st36lg,.kbcover.f3on .bfcard{display:none!important}
+html.f2zone .screen.kbv .st32tt{color:#12301d!important}
+.f3{display:flex;flex-direction:column;gap:12px;flex-shrink:0}
+.f3art{width:100%;height:110px;border-radius:18px;display:block}.f3tag{margin:-4px 0 0;text-align:center;color:#5d7566;font-size:13.5px}
+.f3seg{display:flex;background:#e8f1ea;border-radius:999px;padding:3px}.f3seg button{flex:1;border:0;background:transparent;font:inherit;font-size:14px;padding:8px;border-radius:999px;color:#12301d;cursor:pointer}
+.f3nav{display:flex;align-items:center;justify-content:space-between;background:#fff;border:1px solid #dcebe0;border-radius:999px;padding:4px}.f3nav b{font-weight:600;font-size:16px}.f3nav button{width:38px;height:38px;border:0;background:transparent;font-size:22px;color:#12301d;cursor:pointer;border-radius:50%}.f3nav button:disabled{opacity:.25}
+.f3tri{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}.f3tri>div{display:flex;flex-direction:column;gap:4px;padding:10px;border-radius:14px;background:#eef8f0;border:1px solid #dcebe0;min-width:0}.f3tri small{font-size:12px;color:#5d7566}.f3tri b{font-size:16px;font-weight:600;color:#1c7c3a;overflow-wrap:anywhere}
+.f3tri .exp{background:#fdf1ef;border-color:#f6dcd7}.f3tri .exp b{color:#b8452f}.f3tri .rest.neg b{color:#b8452f}
+.f3h{margin:6px 0 0;font-size:16px;font-weight:600;color:#12301d;font-family:inherit;letter-spacing:0;text-transform:none}
+.f3plan{display:flex;flex-direction:column;gap:4px}
+.f3row{display:grid;grid-template-columns:1fr auto;gap:6px 10px;align-items:baseline;width:100%;border:0;background:transparent;font:inherit;color:#12301d;text-align:left;padding:8px 2px;cursor:pointer}
+.f3row .f3l{font-size:14.5px}.f3row .f3l small{color:#5d7566;font-size:12px}.f3row b{font-weight:600;font-size:14.5px;white-space:nowrap}.f3row b small{font-weight:400;color:#5d7566;font-size:13px}.f3row .f3set{color:#1c7c3a;text-decoration:underline}
+.f3bar{grid-column:1/-1;height:6px;border-radius:3px;background:#e3efe6;overflow:hidden}.f3bar i{display:block;height:100%;border-radius:3px;background:linear-gradient(90deg,#3cb863,#1c7c3a)}.f3row.over .f3bar i{background:#c0563f}.f3row.over b{color:#b8452f}
+.f3row.ed{grid-template-columns:1fr auto;align-items:end;cursor:default;background:#fff;border:1px solid #2a9a4c;border-radius:14px;padding:10px}.f3row.ed label{display:flex;flex-direction:column;gap:4px;font-size:13px;color:#5d7566}
+.f3in{display:flex;align-items:center;gap:6px;border:1px solid #dcebe0;border-radius:10px;padding:6px 10px;background:#fff}.f3in input{flex:1;min-width:0;border:0;outline:none;background:transparent;font:inherit;font-size:16px;color:#12301d}.f3in em{font-style:normal;color:#5d7566}
+.f3add{border:0;border-radius:999px;padding:14px;font:inherit;font-size:15.5px;font-weight:600;color:#fff;background:linear-gradient(180deg,#2a9a4c,#14622c);box-shadow:0 6px 14px rgba(20,98,44,.28);cursor:pointer}
+`);
+/* ---- shopping list: prices and a budget («План закупки») ---- */
+const f3L={plan:['План закупки','Einkaufsplan','Shopping plan','Plan zakupów','Alışveriş planı','Plan d’achat','Plan de compra'],bud:['Бюджет','Budget','Budget','Budżet','Bütçe','Budget','Presupuesto'],sum:['Сумма','Summe','Total','Suma','Toplam','Total','Suma'],rest:['Остаток','Rest','Left','Zostaje','Kalan','Reste','Resto'],
+ price:['цена','Preis','price','cena','fiyat','prix','precio'],hint:['Впишите цены — Butler посчитает сумму и остаток.','Preise eintragen – Butler rechnet Summe und Rest.','Enter prices – Butler adds them up and shows what is left.','Wpisz ceny – Butler policzy sumę i resztę.','Fiyatları girin – Butler toplamı ve kalanı hesaplar.','Saisissez les prix – Butler calcule le total et le reste.','Escriba los precios: Butler calcula la suma y el resto.']};
+const f3l=k=>cv5n(f3L[k]);
+const f3Note=()=>{try{return(g.notes||[]).find(n=>n&&n.k==='list'&&n.shop&&Array.isArray(n.items))}catch{return null}};
+const f3Num=x=>{const n=parseFloat(String(x==null?'':x).replace(',','.'));return n>0?Math.round(n*100)/100:0};
+const f3Tot=N=>{const sum=N.items.reduce((a,it)=>a+(+it.p||0),0),bud=+N.bud||0;return{sum,bud,rest:bud-sum}};
+const f3Sums=N=>{const t=f3Tot(N),c=U().cur;return`<div class="f3r"><span>${i(f3l('sum'))}</span><b>${i(B(Math.round(t.sum*100),c))}</b></div>${t.bud?`<div class="f3r tot${t.rest<0?' neg':''}"><span>${i(f3l('rest'))}</span><b>${i(B(Math.round(t.rest*100),c))}</b></div>`:''}`};
+Hooks.on('render',()=>{try{if(g.fin2off||m.route!=='kblist')return;const sc=document.querySelector('.screen.k43');const N=f3Note();if(!sc||!N||!N.items.length||sc.querySelector('.f3shop'))return;const cur=U().cur||'';
+ const d=document.createElement('div');d.className='f3shop';d.innerHTML=`<h3>${i(f3l('plan'))}</h3>${N.items.map((it,j)=>`<label class="f3it${it.d?' done':''}"><span>${i(it.t)}</span><span class="f3in"><input type="number" inputmode="decimal" min="0" step="0.01" placeholder="${i(f3l('price'))}" value="${it.p||''}" data-f3pr="${j}"><em>${i(cur)}</em></span></label>`).join('')}
+ <label class="f3it bud"><span>${i(f3l('bud'))}</span><span class="f3in"><input type="number" inputmode="decimal" min="0" value="${N.bud||''}" data-f3bud="1"><em>${i(cur)}</em></span></label><div class="f3sums">${f3Sums(N)}</div><p>${i(f3l('hint'))}</p>`;
+ const bar=sc.querySelector('.k4bar');sc.insertBefore(d,bar||null)}catch(e){Hooks.err('f3shop',e)}});
+document.addEventListener('input',e=>{try{const t=e.target;if(!t||!t.dataset)return;const N=f3Note();if(!N)return;if(t.dataset.f3pr!=null&&t.dataset.f3pr!==''){const it=N.items[+t.dataset.f3pr];if(!it)return;const n=f3Num(t.value);if(n)it.p=n;else delete it.p}else if(t.dataset.f3bud){const n=f3Num(t.value);if(n)N.bud=n;else delete N.bud}else return;
+ const s=document.querySelector('.f3sums');if(s)s.innerHTML=f3Sums(N);clearTimeout(f3Note.t);f3Note.t=setTimeout(()=>{try{$()}catch{}},600)}catch(x){Hooks.err('f3pr',x)}},!0);
+Hooks.css('finance-shop',`
+.f3shop{display:flex;flex-direction:column;gap:8px;margin:14px 0;padding:14px;border-radius:18px;background:linear-gradient(135deg,#f1faf3,#fff);border:1px solid #cfe6d5;color:#12301d}
+.f3shop h3{margin:0;font-size:16px;font-weight:600;font-family:inherit;letter-spacing:0;text-transform:none;color:#12301d}.f3shop p{margin:0;font-size:12.5px;color:#5d7566}
+.f3it{display:grid;grid-template-columns:1fr 130px;gap:10px;align-items:center;font-size:14.5px}.f3it.done>span:first-child{text-decoration:line-through;color:#5d7566}.f3it.bud{margin-top:6px;padding-top:10px;border-top:1px solid #dcebe0;font-weight:600}
+.f3r{display:flex;justify-content:space-between;font-size:14.5px;padding:3px 0}.f3r.tot b{font-size:18px;color:#1c7c3a}.f3r.tot.neg b{color:#b8452f}
+`);
