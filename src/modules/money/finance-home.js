@@ -48,10 +48,10 @@ function f2Home(){const ch=m.f2ch;
  <div class="f2grid">${F2T.map(([k,t])=>`<button type="button" data-act="f2go" data-to="${t}">${f2ic(k)}<span>${i(f2t(k))}</span></button>`).join('')}</div>
  <button type="button" class="f2book" data-act="f2book">${f2ic('book')}<span><b>${i(f2t('book'))}</b><small>${i(f2t('bookT'))}</small></span><em>›</em></button></div>`}
 const f2act=(a,e)=>{try{if(typeof L[a]==='function')L[a](e||{});else R(a)}catch(x){Hooks.err('f2act',x)}};
-function f2Go(to,p){m.f2ch=0;if(to.startsWith('bf:')){const k=to.slice(3);if(k==='lab'){R('bfx');return}bfOpen(k,p||null);return}
+function f2Go(to,p){m.f2ch=0;m.f2up='';if(to.startsWith('bf:')){const k=to.slice(3);if(k==='lab'){m.f2up='bfx';R('bfx');return}m.f2up='bfc';bfOpen(k,p||null);return}
  if(to==='bfhome'){R('bf');return}if(to==='rec'){f2act('kbnew',{k:'expense'});return}
- if(to==='shop'){m.f2v='book';const b=['st37buy','kbshop'].find(a=>typeof L[a]==='function');if(b)f2act(b);else R('kbshop');return}
- m.f2v='book';f2act(to)}
+ if(to==='shop'){const b=['st37buy','kbshop'].find(a=>typeof L[a]==='function');if(b)f2act(b);else R('kbshop');return}
+ f2act(to)}
 /* ---- the ask bar: phrases → a screen with fields filled in; nothing is saved here ---- */
 function f2Ask(q){q=String(q||'').trim();if(!q)return;const s=q.toLowerCase(),nums=(s.replace(/(\d)[\s.](?=\d{3}\b)/g,'$1').match(/\d+(?:[.,]\d+)?/g)||[]).map(x=>parseFloat(x.replace(',','.')));
  const has=r=>r.test(s);m.f2q='';
@@ -83,7 +83,7 @@ document.addEventListener('submit',e=>{const t=e.target;if(t&&t.dataset&&t.datas
 Hooks.on('render',()=>{try{if(!f2On()||m.route!=='cat'||m.cat!=='bank')return;const sc=document.querySelector('.screen');if(!sc)return;
  if(m.f2v==='book'){const bk=sc.querySelector('[data-act="go"][data-to="home"]');if(bk){bk.dataset.act='f2home';delete bk.dataset.to}return}
  if(sc.classList.contains('fin2'))return;const q=document.activeElement&&document.activeElement.dataset&&document.activeElement.dataset.f2q;sc.outerHTML=f2Home();if(q){const el=document.querySelector('[data-f2q]');el&&el.focus()}}catch(e){Hooks.err('f2home',e)}});
-Hooks.on('route',r=>{if(r==='home')m.f2v=''});
+Hooks.on('route',r=>{if(r==='home')m.f2v='';if(r==='bf'||!/^bf/.test(r||''))m.f2up=''});
 document.addEventListener('click',e=>{try{if(!f2On())return;const b=e.target.closest&&e.target.closest('.screen.bf > .sub-hdr > button:first-child');if(b&&m.route==='bf'){e.preventDefault();e.stopPropagation();m.f2v='';m.cat='bank';R('cat','bank')}}catch{}},!0);
 /* settings row: back to the former look */
 Hooks.on('screen',(html,route)=>{if(route!=='kbset'||typeof html!=='string')return;return html.replace(/<\/div>\s*$/,`<button type="button" class="dcrow" data-act="f2old"><span><b>${i(f2t('old'))}</b><small>${i(f2t('oldT'))}</small></span><em>${g.fin2off?'✓':''}</em></button></div>`)});
