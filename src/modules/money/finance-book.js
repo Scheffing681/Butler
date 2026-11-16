@@ -87,3 +87,17 @@ Hooks.css('finance-shop',`
 .f3it{display:grid;grid-template-columns:1fr 130px;gap:10px;align-items:center;font-size:14.5px}.f3it.done>span:first-child{text-decoration:line-through;color:#5d7566}.f3it.bud{margin-top:6px;padding-top:10px;border-top:1px solid #dcebe0;font-weight:600}
 .f3r{display:flex;justify-content:space-between;font-size:14.5px;padding:3px 0}.f3r.tot b{font-size:18px;color:#1c7c3a}.f3r.tot.neg b{color:#b8452f}
 `);
+/* ---- goals: «Рекомендация Butler» — plain arithmetic on the goal's own monthly amount ---- */
+const f3G={rec:['Рекомендация Butler','Butler-Hinweis','Butler’s note','Wskazówka Butlera','Butler’ın notu','Conseil de Butler','Consejo de Butler'],
+ t:['Если откладывать %m в месяц, цель «%g» будет достигнута через %d.','Wenn Sie %m im Monat zurücklegen, ist das Ziel «%g» in %d erreicht.','If you put aside %m a month, the goal “%g” is reached in %d.','Odkładając %m miesięcznie, cel „%g” osiągniesz za %d.','Ayda %m ayırırsanız «%g» hedefine %d sonra ulaşılır.','En mettant %m de côté par mois, l’objectif « %g » est atteint dans %d.','Si aparta %m al mes, la meta «%g» se alcanza en %d.'],
+ none:['Укажите у цели взнос в месяц — и Butler покажет, когда она будет достигнута.','Tragen Sie beim Ziel eine Monatsrate ein – Butler zeigt, wann es erreicht ist.','Give the goal a monthly amount and Butler shows when it is reached.','Podaj miesięczną wpłatę – Butler pokaże, kiedy cel zostanie osiągnięty.','Hedefe aylık tutar girin; Butler ne zaman ulaşılacağını gösterir.','Indiquez un versement mensuel – Butler montre quand l’objectif sera atteint.','Indique un aporte mensual y Butler mostrará cuándo se alcanza.'],
+ y:['г.','J.','y','l.','y','a','a'],mo:['мес.','Mon.','mo','mies.','ay','mois','meses'],
+ fine:['Без учёта процентов и роста цен.','Ohne Zinsen und Preissteigerung.','Without interest or price rises.','Bez odsetek i wzrostu cen.','Faiz ve fiyat artışı hariç.','Hors intérêts et hausse des prix.','Sin intereses ni subida de precios.']};
+Hooks.on('render',()=>{try{if(g.fin2off||m.route!=='kbgoals')return;const sc=document.querySelector('.screen.kbv');if(!sc||sc.querySelector('.f3rec')||!sc.querySelector('.kbgoal'))return;
+ const G=(U().goals||[]).filter(x=>x&&!x.done&&(x.target||0)>(x.saved||0));if(!G.length)return;const W=G.filter(x=>x.monthly>0).map(x=>({x,n:Math.ceil((x.target-(x.saved||0))/x.monthly)})).sort((a,b)=>a.n-b.n)[0];let txt;
+ if(W){const yy=Math.floor(W.n/12),mm=W.n%12,d=[yy?yy+' '+cv5n(f3G.y):'',mm?mm+' '+cv5n(f3G.mo):''].filter(Boolean).join(' ');txt=cv5n(f3G.t).replace('%m',B(W.x.monthly,W.x.cur)).replace('%g',W.x.name||'').replace('%d',d).replace('..','.')+' '+cv5n(f3G.fine)}else txt=cv5n(f3G.none);
+ const d=document.createElement('div');d.className='f3rec';d.innerHTML=`<b>${i(cv5n(f3G.rec))}</b><p>${i(txt)}</p>`;sc.appendChild(d)}catch(e){Hooks.err('f3rec',e)}});
+Hooks.css('finance-goals',`
+.f3rec{flex-shrink:0;margin-top:12px;padding:14px 16px;border-radius:18px;background:linear-gradient(135deg,#eef8f0,#fff);border:1px solid #cfe6d5;color:#12301d}.f3rec b{font-weight:600;font-size:15.5px}.f3rec p{margin:6px 0 0;font-size:14px;line-height:1.45;color:#2b4a36}
+html.f2zone.f2zone .nav button.mic,html.f2zone.f2zone .nav button.mic.bd8pl{background:radial-gradient(circle at 35% 30%,#3cb863,#14622c)!important;color:#fff!important;border-color:#fff!important}html.f2zone.f2zone .nav button.mic svg,html.f2zone.f2zone .nav button.mic *{color:#fff!important;stroke:#fff}
+`);
