@@ -92,6 +92,7 @@ function rcBook(){const q=(m.rcQ||'').trim().toLowerCase(),c=m.rcC||'all',sel=m.
  const nSel=Object.keys(sel).filter(k=>sel[k]).length;
  const card=r=>{const ph=rcPhoto(r.id);return`<div class="rzbcard${sel[r.id]?' on':''}"><button type="button" class="rzbck" data-act="rzbsel" data-id="${i(r.id)}" aria-label="✓">${sel[r.id]?'✓':''}</button><button type="button" class="rzbbody" data-act="rzbopen" data-id="${i(r.id)}">${ph?`<img src="${ph}" alt="">`:`<span class="rzbph">${r.src==='butler'?'🥗':'🍲'}</span>`}<span class="rzbt"><b>${i(r.t)}</b><small>${i(rct('porN',{n:r.por||1}))}${r.time?' · '+i(rct('min',{n:r.time})):''} · ${(r.ing||[]).length} ${i(rct('ing').toLowerCase())}</small></span>${r.fav?'<em>★</em>':''}</button></div>`};
  return`<div class="screen rzbv0">${rcHdr(rct('book'),`<button class="iconbtn" data-act="rzbnew" aria-label="+">＋</button>`)}
+ ${typeof mpBookCard==='function'?mpBookCard():''}
  <input class="field rzbq" type="search" placeholder="🔍 ${i(rct('find'))}" value="${i(m.rcQ||'')}" data-rcq="1">
  <div class="rzbchips">${chips.map(([k,t])=>`<button type="button" class="${c===k?'on':''}" data-act="rzbcat" data-k="${k}">${i(t)}</button>`).join('')}</div>
  ${L.length?`<div class="rzblist">${L.map(card).join('')}</div>`:`<p class="rzbnone">${i(q?rct('none'):rct('empty'))}</p>`}
@@ -105,7 +106,7 @@ function rcView(){const r=rcGet(m.rcId);if(!r)return rcBook();const por=rcPorOf(
  ${ph?`<img class="rzbimg" src="${ph}" alt="">`:''}
  <p class="rzbmeta">${r.src==='butler'?i(rct('ofButler')):i(rct('c_'+(r.cat||'other')))}${r.time?' · ⏱ '+i(rct('min',{n:r.time})):''}</p>
  <div class="rzbpor"><span>${i(rct('por'))}</span><button type="button" data-act="rzbpor" data-d="-1">−</button><b>${por}</b><button type="button" data-act="rzbpor" data-d="1">+</button></div>
- <div class="rzbacts"><button type="button" class="rzbbig" data-act="rzbcook">${i(rct('cook'))}</button><button type="button" class="rzbbig2" data-act="rzbonelist">${i(rct('toList'))}</button></div>
+ <div class="rzbacts"><button type="button" class="rzbbig" data-act="rzbcook">${i(rct('cook'))}</button><button type="button" class="rzbbig2" data-act="rzbonelist">${i(rct('toList'))}</button></div>${typeof mpt==='function'?`<button type="button" class="rzblink mptm" data-act="mptomenu">${i(mpt('toMenu'))}</button>`:''}
  <h3 class="rzbh">${i(rct('ing'))}</h3><ul class="rzbing">${(r.ing||[]).map(x=>`<li><b>${i(rcAmt(x,f))}</b><span>${i(x.n)}</span></li>`).join('')}</ul>
  ${(()=>{const C=rcCost(r,f);if(!C||!C.have)return'';return`<div class="rzbcost"><div><span>${i(rct('cost'))}</span><b>${i(e2money(C.sum))}</b></div><div><span>${i(rct('perPor'))}</span><b>${i(e2money(Math.round(C.sum/por)))}</b></div><small>${i(rct('costHave',{a:C.have,b:C.all}))}${m.k43shop?' · '+i(rct('costShop',{s:m.k43shop})):''}</small></div>`})()}
  ${(r.steps||[]).length?`<h3 class="rzbh">${i(rct('steps'))}</h3><ol class="rzbsteps">${r.steps.map(s=>`<li>${i(s)}</li>`).join('')}</ol>`:''}
@@ -136,9 +137,9 @@ function rcCook(){const r=rcGet(m.rcId);if(!r)return rcBook();const K=m.rcK||(m.
 const rcRe=()=>{try{k3keep(()=>v())}catch{try{v()}catch{}}};
 /* back: cooking → recipe → book → where the book was opened from */
 function rcBack(){const r=m.route;if(r==='rck'){rcWake(!1);R('rcv',void 0,!0);return}if(r==='rce'){const d=m.rcDraft;m.rcDraft=null;if(d&&d.id&&rcGet(d.id)){m.rcId=d.id;R('rcv',void 0,!0)}else R('rcb',void 0,!0);return}
- if(r==='rcv'){R('rcb',void 0,!0);return}const to=m.rcFrom||'kblist';m.rcFrom='';if(to==='sx'){R('sxnut',void 0,!0);return}R(to==='home'?'home':to,void 0,!0)}
+ if(r==='rcv'){if(m.rcvFrom==='rcw'){m.rcvFrom='';R('rcw',void 0,!0);return}R('rcb',void 0,!0);return}if(r==='rcw'){const f=m.mpFrom;m.mpFrom='';if(f&&f!=='rcb'&&f!=='rcw'){R(f,void 0,!0);return}R('rcb',void 0,!0);return}const to=m.rcFrom||'kblist';m.rcFrom='';if(to==='sx'){R('sxnut',void 0,!0);return}R(to==='home'?'home':to,void 0,!0)}
 Hooks.act('rzbback',rcBack);
-window.addEventListener('click',e=>{try{if(!/^rc[bvek]$/.test(m.route||''))return;const b=e.target.closest&&e.target.closest('.screen > .sub-hdr > button:first-child');if(!b)return;e.preventDefault();e.stopImmediatePropagation();rcBack()}catch{}},!0);
+window.addEventListener('click',e=>{try{if(!/^rc[bvekw]$/.test(m.route||''))return;const b=e.target.closest&&e.target.closest('.screen > .sub-hdr > button:first-child');if(!b)return;e.preventDefault();e.stopImmediatePropagation();rcBack()}catch{}},!0);
 Hooks.act('rzbbook',()=>{m.rcFrom=m.route==='kblist'?'kblist':m.route==='sxnut'?'sx':m.route||'kblist';R('rcb')});
 Hooks.act('rzbcat',e=>{m.rcC=e.k;rcRe()});
 Hooks.act('rzbsel',e=>{const s=m.rcSel||(m.rcSel={});s[e.id]=!s[e.id];rcRe()});
