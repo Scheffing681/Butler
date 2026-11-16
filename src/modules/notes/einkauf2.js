@@ -14,6 +14,13 @@ const e2S={
  chk:['Чек','Beleg','Receipt','Paragon','Fiş','Ticket','Ticket'],plan:['План','Plan','Plan','Plan','Plan','Plan','Plan'],
  act:['Акции учтены','Angebote aktiv','Offers on','Promocje aktywne','Fırsatlar aktif','Promos actives','Ofertas activas'],
  offOn:['%n акций на товары из вашего списка','%n Angebote für Ihre Liste','%n offers for your list','%n promocji na Twoją listę','Listeniz için %n fırsat','%n promos pour votre liste','%n ofertas para su lista'],
+ pack:['Упаковка','Packung','Pack size','Opakowanie','Paket','Conditionnement','Envase'],packH:['например 1 kg, 500 g, 10 шт.','z. B. 1 kg, 500 g, 10 Stk.','e.g. 1 kg, 500 g, 10 pcs','np. 1 kg, 500 g, 10 szt.','örn. 1 kg, 500 g, 10 adet','ex. 1 kg, 500 g, 10 pièces','p. ej. 1 kg, 500 g, 10 uds.'],
+ left:['останется %v','übrig %v','%v left over','zostanie %v','%v artar','reste %v','sobra %v'],
+ apx:['≈ где размер упаковки неизвестен','≈ wo die Packungsgröße fehlt','≈ where the pack size is unknown','≈ gdzie brak wielkości opakowania','≈ paket boyutu bilinmeyenlerde','≈ là où le conditionnement manque','≈ donde falta el tamaño del envase'],
+ cmp:['Сравнить магазины','Geschäfte vergleichen','Compare shops','Porównaj sklepy','Mağazaları karşılaştır','Comparer les magasins','Comparar tiendas'],
+ cmpH:['Тот же список в каждом магазине, по его акциям и вашим чекам. Нажмите магазин, чтобы считать по нему.','Dieselbe Liste in jedem Geschäft, nach seinen Angeboten und Ihren Belegen. Tippen Sie ein Geschäft an, um danach zu rechnen.','The same list in each shop, by its offers and your receipts. Tap a shop to price by it.','Ta sama lista w każdym sklepie, wg jego promocji i Twoich paragonów. Dotknij sklepu, by liczyć według niego.','Aynı liste her mağazada, fırsatlarına ve fişlerinize göre. Ona göre hesaplamak için mağazaya dokunun.','La même liste dans chaque magasin, selon ses promos et vos tickets. Touchez un magasin pour calculer avec lui.','La misma lista en cada tienda, según sus ofertas y sus tickets. Toque una tienda para calcular con ella.'],
+ anyShop:['Лучшие цены везде','Beste Preise überall','Best prices anywhere','Najlepsze ceny wszędzie','Her yerde en iyi fiyat','Meilleurs prix partout','Mejores precios en todas'],
+ inShop:['Цены по магазину: %s','Preise für: %s','Prices for: %s','Ceny dla: %s','Fiyatlar: %s','Prix pour : %s','Precios de: %s'],
  planT:['План закупки','Einkaufsplan','Shopping plan','Plan zakupów','Alışveriş planı','Plan d’achat','Plan de compra'],
  est:['Примерная сумма','Geschätzte Summe','Estimated total','Szacowana suma','Tahmini toplam','Total estimé','Total estimado'],
  orig:['без акций','ohne Angebote','without offers','bez promocji','fırsatsız','sans promos','sin ofertas'],
@@ -41,19 +48,29 @@ const e2S={
 const e2t=(k,o)=>{let t=cv5n(e2S[k]);if(o)for(const q in o)t=t.split('%'+q).join(o[q]);return t};
 const e2low=s=>String(s||'').toLowerCase().normalize('NFKD').replace(/[̀-ͯ]/g,'').replace(/ß/g,'ss').replace(/[^a-zа-яё0-9 ]+/g,' ').replace(/\s+/g,' ').trim();
 /* amounts are cents, like receipt prices (Kc formats cents in the user's currency) */
-const e2money=a=>{try{return Kc(a)}catch{return(Math.round(a)/100).toFixed(2).replace('.',',')+' €'}};
+const e2money=a=>{try{return B(a)}catch{return(Math.round(a)/100).toFixed(2).replace('.',',')+' €'}};
 const e2num=x=>{const n=parseFloat(String(x==null?'':x).replace(',','.'));return n>0?Math.round(n*100):0};
 const e2today=()=>new Date().toISOString().slice(0,10);
 const e2offers=()=>{const a=Array.isArray(g.shopOff)?g.shopOff:(g.shopOff=[]);const t=e2today(),old=new Date(Date.now()-30*864e5).toISOString().slice(0,10);
  const keep=a.filter(o=>!o.until||o.until>=old);if(keep.length!==a.length){g.shopOff=keep;try{$()}catch{}}return keep.filter(o=>!o.until||o.until>=t)};
 /* «Eier» matches «Eier (10 Stk.)», «Bio-Eier», «eggs» does not — plain word match, no guessing */
 const e2match=(item,off)=>{const a=e2low(item),b=e2low(off);if(!a||!b)return!1;if(a===b)return!0;const aw=a.split(' '),bw=b.split(' ');return aw.every(w=>w.length>2&&bw.some(x=>x===w||x.endsWith(w)||x.startsWith(w)))||bw.every(w=>w.length>2&&aw.some(x=>x===w))};
-function e2price(x){const sel=m.k43shop||'';const offs=e2offers().filter(o=>e2match(x.t,o.t)&&(!sel||e2low(o.shop)===e2low(sel)));
- if(offs.length){const o=offs.sort((p,q)=>p.p-q.p)[0];let old=o.old||0;if(!old){try{const r=Q_(x.t);if(r&&r.p>o.p)old=r.p}catch{}}return{p:o.p,old,src:'off',shop:o.shop,until:o.until}}
- try{const r=Q_(x.t);if(r&&r.p)return{p:r.p,src:'rec',shop:r.s}}catch{}
- if(x.p)return{p:x.p,src:'own'};return null}
+/* pack sizes and amounts in base units: g, ml, pc */
+const E2U={g:['g',1],gr:['g',1],kg:['g',1000],г:['g',1],кг:['g',1000],ml:['ml',1],мл:['ml',1],l:['ml',1000],л:['ml',1000],ltr:['ml',1000],cl:['ml',10],dl:['ml',100],stk:['pc',1],'stk.':['pc',1],stück:['pc',1],st:['pc',1],'st.':['pc',1],er:['pc',1],шт:['pc',1],'шт.':['pc',1],pcs:['pc',1],szt:['pc',1],'szt.':['pc',1],adet:['pc',1]};
+function e2pack(t){const s=String(t||'').toLowerCase();let m0=s.match(/(\d+)\s?x\s?(\d+(?:[.,]\d+)?)\s?(kg|g|gr|ml|l|ltr|cl|dl)(?![a-zа-я])/);if(m0){const u=E2U[m0[3]];return{k:u[0],v:+m0[1]*parseFloat(m0[2].replace(',','.'))*u[1]}}
+ m0=s.match(/(\d+(?:[.,]\d+)?)\s?(kg|g|gr|ml|l|ltr|cl|dl|stk\.?|stück|st\.|er|шт\.?|кг|г|мл|л|szt\.?|adet)(?![a-zа-яäöü])/);if(!m0)return null;const u=E2U[m0[2]]||E2U[m0[2].replace(/\.$/,'')];if(!u)return null;const v=parseFloat(m0[1].replace(',','.'))*u[1];return v>0?{k:u[0],v}:null}
+function e2need(x){if(x.rq&&x.rq.v>0)return{k:x.rq.k,v:x.rq.v};const q=String(x.q||'').trim();if(!q)return null;if(/^\d+$/.test(q))return{k:'pc',v:+q,cnt:1};return e2pack(q)}
+function e2price(x,shop){const sel=shop!=null?shop:(m.k43shop||'');const offs=e2offers().filter(o=>e2match(x.t,o.t)&&(!sel||e2low(o.shop)===e2low(sel)));
+ let rec=null;try{if(sel){const P=LP(x.t),st=P&&P.stores.find(z=>e2low(z.s)===e2low(sel));if(st)rec={p:st.last,s:st.s}}else{const r=Q_(x.t);if(r&&r.p)rec={p:r.p,s:r.s}}}catch{}
+ if(offs.length){const o=offs.sort((p,q)=>p.p-q.p)[0];let old=o.old||0;if(!old&&rec&&rec.p>o.p)old=rec.p;return{p:o.p,old,src:'off',shop:o.shop,until:o.until,pk:o.pk||e2pack(o.t)}}
+ if(rec)return{p:rec.p,src:'rec',shop:rec.s,pk:x.pk||null};
+ if(x.p&&!sel)return{p:x.p,src:'own',pk:x.pk||null};if(x.p&&sel)return{p:x.p,src:'own',pk:x.pk||null};return null}
 const e2qty=x=>{const n=parseInt(String(x.q||'').trim(),10);return /^\d+$/.test(String(x.q||'').trim())&&n>0&&n<100?n:1};
-function e2sum(){const L=Yl(),left=(L.items||[]).filter(x=>!x.d);let est=0,orig=0,have=0;left.forEach(x=>{const p=e2price(x);if(!p)return;have++;const q=e2qty(x);est+=p.p*q;orig+=(p.old||p.p)*q});return{est,orig,save:orig-est,have,all:left.length}}
+/* what the need costs: whole packs; how much is left over; price per kg / l */
+function e2cost(x,p){const need=e2need(x),pk=p.pk;if(need&&pk&&pk.k===need.k){const n=Math.max(1,Math.ceil(need.v/pk.v-1e-9));return{n,cost:n*p.p,old:n*(p.old||p.p),left:n*pk.v-need.v,pk,need,unit:pk.k!=='pc'?Math.round(p.p/(pk.v/1000)):0,approx:!1}}
+ const n=need&&need.cnt?Math.max(1,Math.round(need.v)):(need&&need.k==='pc'&&!pk?Math.max(1,Math.ceil(need.v)):1);return{n,cost:n*p.p,old:n*(p.old||p.p),left:0,pk,need,unit:pk&&pk.k!=='pc'?Math.round(p.p/(pk.v/1000)):0,approx:!!(need&&!need.cnt&&!(need.k==='pc'&&!pk))}}
+const e2fmtQ=(k,v)=>k==='g'?(v>=1000?(Math.round(v/100)/10+'').replace('.',',')+' kg':Math.round(v)+' g'):k==='ml'?(v>=1000?(Math.round(v/100)/10+'').replace('.',',')+' l':Math.round(v)+' ml'):(Math.round(v*10)/10+'').replace('.',',')+' '+cv5n(['шт.','Stk.','pcs','szt.','adet','pc','ud.']);
+function e2sum(shop){const L=Yl(),left=(L.items||[]).filter(x=>!x.d);let est=0,orig=0,have=0,approx=0;left.forEach(x=>{const p=e2price(x,shop);if(!p)return;have++;const c=e2cost(x,p);est+=c.cost;orig+=c.old;if(c.approx)approx++});return{est,orig,save:orig-est,have,all:left.length,approx}}
 const E2I={shops:'<path d="M4 9l1.5-5h13L20 9M4 9h16v11H4zM4 9c0 1.7 1.3 3 3 3s3-1.3 3-3c0 1.7 1.3 3 3 3s3-1.3 3-3c0 1.7 1.3 3 3 3"/>',off:'<path d="M3 12V4h8l10 10-8 8z"/><circle cx="7.5" cy="8.5" r="1.4"/>',chk:'<path d="M6 3h12v18l-3-2-3 2-3-2-3 2z"/><path d="M9 8h6M9 12h6M9 16h3"/>',plan:'<path d="M5 4h14v16H5z"/><path d="M8 9h8M8 13h8M8 17h5"/>'};
 const e2ic=k=>`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${E2I[k]}</svg>`;
 /* ---- decorate the list screen after each render ---- */
@@ -62,24 +79,29 @@ Hooks.on('render',()=>{try{if(m.route!=='kblist')return;const sc=document.queryS
   mini.insertAdjacentHTML('afterend',`<div class="e2tiles"><button type="button" data-act="k43nav" data-to="kbshops">${e2ic('shops')}<span>${i(e2t('shops'))}</span></button><button type="button" data-act="e2off">${e2ic('off')}<span>${i(e2t('off'))}</span>${e2offers().length?`<em>${e2offers().length}</em>`:''}</button><button type="button" data-act="k43chk">${e2ic('chk')}<span>${i(e2t('chk'))}</span></button><button type="button" data-act="e2plan">${e2ic('plan')}<span>${i(e2t('plan'))}</span></button></div>`)}
  sc.querySelectorAll('.k4r').forEach(r=>{const b=r.querySelector('b'),k=+((r.querySelector('[data-i]')||{}).dataset||{}).i;const x=(L.items||[])[k];if(!b||!x)return;const p=e2price(x);
   if(!p){b.innerHTML=x.d?'':`<button type="button" class="e2add" data-act="e2pr" data-i="${k}">${i(e2t('addP'))}</button>`;return}
-  const pct=p.old>p.p?Math.round((1-p.p/p.old)*100):0;
-  const note=p.src==='off'&&!m.k43shop?p.shop:p.src==='rec'?e2t('rec'):'';
-  b.innerHTML=`<span class="e2p" data-act="e2pr" data-i="${k}"><strong>${i(e2money(p.p))}</strong>${pct||note?`<span class="e2l">${pct?`<em>−${pct}%</em><s>${i(e2money(p.old))}</s>`:''}${note?`<small>${i(note)}</small>`:''}</span>`:''}</span>`});
+  const pct=p.old>p.p?Math.round((1-p.p/p.old)*100):0,c=e2cost(x,p);
+  const note=[c.n>1?c.n+' × '+e2money(p.p):'',c.unit?e2money(c.unit)+(c.pk.k==='ml'?'/l':'/kg'):'',p.src==='off'&&!m.k43shop?p.shop:p.src==='rec'?e2t('rec'):''].filter(Boolean).join(' · ');
+  b.innerHTML=`<span class="e2p" data-act="e2pr" data-i="${k}"><strong>${c.approx?'≈ ':''}${i(e2money(c.cost))}</strong>${pct?`<span class="e2l"><em>−${pct}%</em><s>${i(e2money(c.old))}</s></span>`:''}${note?`<small>${i(note)}</small>`:''}${c.left>0.0001?`<small class="e2left">${i(e2t('left',{v:e2fmtQ(c.pk.k,c.left)}))}</small>`:''}</span>`});
  const S=e2sum(),sub=sc.querySelector('.k4sub');if(sub&&S.est)sub.textContent=sub.textContent.split(' · ')[0]+' · ≈ '+e2money(S.est);
  const go=sc.querySelector('.k4go small');if(go)go.textContent=S.est?'≈ '+e2money(S.est):'';
  const shopCard=sc.querySelector('.k4shop');if(shopCard&&!m.k43shop){const cnt={};(L.items||[]).filter(x=>!x.d).forEach(x=>{const seen=new Set();e2offers().forEach(o=>{if(o.shop&&!seen.has(o.shop)&&e2match(x.t,o.t)){seen.add(o.shop);cnt[o.shop]=(cnt[o.shop]||0)+1}})});const best=Object.keys(cnt).sort((a,b)=>cnt[b]-cnt[a])[0];
   const b0=shopCard.querySelector('b'),s0=shopCard.querySelector('small');if(best&&b0&&s0&&/Kein|Нет|No shop|Brak|yok|Aucun|Ningún|Sin/i.test(b0.textContent)){b0.textContent=best;s0.textContent=e2t('offOn',{n:cnt[best]})}else if(!S.have&&/autoNo|keine Preise|No prices|Цен|prices yet/i.test(shopCard.textContent))shopCard.remove()}
  if(S.all){const pct=S.orig>0&&S.save>0.004?Math.round(S.save/S.orig*100):0;const card=document.createElement('div');card.className='e2plan';card.id='e2plan';
   const PR=(Yl().items||[]).filter(x=>!x.d).map(x=>[x,e2price(x)]).filter(z=>z[1]),act=PR.some(z=>z[1].src==='off');
-  const lines=PR.map(([x,p])=>{const pc=p.old>p.p?Math.round((1-p.p/p.old)*100):0;return`<div class="e2pl"><span>${i(x.t)}${e2qty(x)>1?` ×${e2qty(x)}`:''}</span>${pc?`<em>−${pc}%</em><s>${i(e2money(p.old))}</s>`:'<em class="no"></em><s></s>'}<b>${i(e2money(p.p))}</b></div>`}).join('');
-  card.innerHTML=S.have?`<div class="e2ph"><h3>${i(e2t('planT'))}</h3>${act?`<span class="e2act">🏷 ${i(e2t('act'))}</span>`:''}</div><div class="e2pls">${lines}</div><div class="e2tot"><span>${i(e2t('est'))}</span><b>${i(e2money(S.est))}</b></div>${pct?`<p>${i(e2t('orig'))}: <s>${i(e2money(S.orig))}</s> · ${i(e2t('save'))}: <em>${i(e2money(S.save))} (−${pct}%)</em></p>`:''}<small>${i(e2t('have',{a:S.have,b:S.all}))}</small>`:`<h3>${i(e2t('planT'))}</h3><small>${i(e2t('noPr'))}</small>`;
+  const lines=PR.map(([x,p])=>{const pc=p.old>p.p?Math.round((1-p.p/p.old)*100):0,c=e2cost(x,p);return`<div class="e2pl"><span>${i(x.t)}${c.n>1?` ×${c.n}`:''}</span>${pc?`<em>−${pc}%</em><s>${i(e2money(c.old))}</s>`:'<em class="no"></em><s></s>'}<b>${c.approx?'≈ ':''}${i(e2money(c.cost))}</b></div>`}).join('');
+  card.innerHTML=S.have?`<div class="e2ph"><h3>${i(e2t('planT'))}</h3>${act?`<span class="e2act">🏷 ${i(e2t('act'))}</span>`:''}</div><div class="e2pls">${lines}</div><div class="e2tot"><span>${i(e2t('est'))}</span><b>${i(e2money(S.est))}</b></div>${pct?`<p>${i(e2t('orig'))}: <s>${i(e2money(S.orig))}</s> · ${i(e2t('save'))}: <em>${i(e2money(S.save))} (−${pct}%)</em></p>`:''}<small>${i(e2t('have',{a:S.have,b:S.all}))}${S.approx?' · '+i(e2t('apx')):''}</small>${m.k43shop?`<p class="e2in">${i(e2t('inShop',{s:m.k43shop}))}</p>`:''}<button type="button" class="e2cmp" data-act="e2cmp">⚖ ${i(e2t('cmp'))}</button>`:`<h3>${i(e2t('planT'))}</h3><small>${i(e2t('noPr'))}</small>`;
   const list=sc.querySelector('.k4list');if(list)list.insertAdjacentElement('afterend',card)}}catch(e){Hooks.err('e2list',e)}});
 const e2Re=()=>{try{k3keep(()=>v())}catch{try{v()}catch{}}};
 Hooks.act('e2plan',()=>{const c=document.getElementById('e2plan');if(c)c.scrollIntoView({behavior:'smooth',block:'center'})});
 /* own price for one item */
 Hooks.act('e2pr',e=>{const L=Yl(),x=(L.items||[])[+e.i];if(!x)return;const p=e2price(x);
- const sh=H(e2t('priceQ',{t:x.t}),`<div class="e2f"><label><span>${i(e2t('newP'))}</span><input type="number" inputmode="decimal" min="0" step="0.01" value="${x.p?x.p/100:(p&&p.src!=='off'?p.p/100:'')}" data-v></label><button type="button" class="dcadd gold" data-ok>${i(e2t('ok'))}</button></div>`,()=>{});
- const inp=sh.querySelector('[data-v]');setTimeout(()=>inp&&inp.focus(),80);sh.querySelector('[data-ok]').onclick=()=>{const n=e2num(inp.value);if(n)x.p=n;else delete x.p;$();sh.remove();e2Re()}});
+ const sh=H(e2t('priceQ',{t:x.t}),`<div class="e2f"><label><span>${i(e2t('newP'))}</span><input type="number" inputmode="decimal" min="0" step="0.01" value="${x.p?x.p/100:(p&&p.src!=='off'?p.p/100:'')}" data-v></label><label><span>${i(e2t('pack'))}</span><input type="text" placeholder="${i(e2t('packH'))}" value="${i(x.pkT||'')}" data-k></label><button type="button" class="dcadd gold" data-ok>${i(e2t('ok'))}</button></div>`,()=>{});
+ const inp=sh.querySelector('[data-v]');setTimeout(()=>inp&&inp.focus(),80);sh.querySelector('[data-ok]').onclick=()=>{const n=e2num(inp.value);if(n)x.p=n;else delete x.p;const kt=sh.querySelector('[data-k]').value.trim(),pk=e2pack(kt);if(pk){x.pk=pk;x.pkT=kt}else{delete x.pk;delete x.pkT}$();sh.remove();e2Re()}});
+/* compare shops: the same list priced in each shop that has offers or receipt prices */
+Hooks.act('e2cmp',()=>{const L=(Yl().items||[]).filter(x=>!x.d),shops=new Set();e2offers().forEach(o=>o.shop&&shops.add(o.shop));L.forEach(x=>{try{const P=LP(x.t);P&&P.stores.forEach(z=>shops.add(z.s))}catch{}});
+ const rows=[...shops].map(s=>({s,...e2sum(s)})).filter(r=>r.have).sort((a,b)=>b.have-a.have||a.est-b.est),best=e2sum('');
+ const sh=H(e2t('cmp'),`<div class="e2box"><p class="fdsmall">${i(e2t('cmpH'))}</p><div class="e2cm">${[{s:'',...best,all1:1}].concat(rows).map(r=>`<button type="button" class="${(m.k43shop||'')===r.s?'on':''}" data-s="${i(r.s)}"><span><b>${i(r.s||e2t('anyShop'))}</b><small>${i(e2t('have',{a:r.have,b:r.all}))}${r.save>0.4?' · '+i(e2t('save'))+' '+i(e2money(r.save)):''}</small></span><strong>${r.approx?'≈ ':''}${i(e2money(r.est))}</strong></button>`).join('')}</div></div>`,()=>{});
+ sh.querySelectorAll('[data-s]').forEach(b=>b.onclick=()=>{m.k43shop=b.dataset.s||'';sh.remove();e2Re()})});
 /* offers: list, add, delete */
 function e2offSheet(pre){const shops=(()=>{try{return fy().map(s=>s.name).filter(Boolean)}catch{return[]}})(),sel=m.k43shop||'';
  const draw=()=>{const O=e2offers();const by={};O.forEach(o=>{(by[o.shop||'—']=by[o.shop||'—']||[]).push(o)});
@@ -110,6 +132,8 @@ Hooks.css('einkauf2',`
 .e2l{display:inline-flex;align-items:baseline;gap:5px;white-space:nowrap}.e2p small{font-size:11px;font-weight:400;color:var(--muted)}.e2or .e2p{flex-direction:row;align-items:baseline;gap:6px}
 .e2add{border:0;background:transparent;color:var(--gold);font:inherit;font-size:13px;font-weight:400;padding:4px 0;cursor:pointer;white-space:nowrap}
 .e2plan{margin:16px 0;padding:14px 16px;border-radius:18px;border:1px solid var(--line);background:var(--surface);color:var(--ink)}
+.e2left{color:var(--ok,#2E7D4F)!important}.e2cmp{width:100%;margin-top:12px;border:1px solid var(--gold);background:transparent;color:var(--ink);font:inherit;font-size:15px;padding:11px;border-radius:999px;cursor:pointer}.e2in{color:var(--gold)!important}
+.e2cm{display:flex;flex-direction:column;gap:8px;margin-top:10px}.e2cm button{display:flex;align-items:center;gap:12px;padding:12px 14px;border:1px solid var(--line);border-radius:16px;background:var(--surface);color:var(--ink);font:inherit;text-align:left;cursor:pointer}.e2cm button.on{border-color:var(--gold);background:var(--gold-soft)}.e2cm span{flex:1;display:flex;flex-direction:column;gap:2px}.e2cm small{color:var(--muted);font-size:12.5px}.e2cm strong{font-size:17px;font-family:-apple-system,system-ui,sans-serif}
 .e2plan h3{margin:0 0 8px;font-size:17px;font-weight:600;font-family:inherit;letter-spacing:0;text-transform:none}
 .e2ph{display:flex;align-items:center;justify-content:space-between;gap:8px}.e2ph h3{margin:0 0 8px}.e2act{font-size:12px;padding:4px 10px;border-radius:999px;background:var(--gold-soft);color:var(--ink);white-space:nowrap}
 .e2pls{margin:4px 0 10px}.e2pl{display:grid;grid-template-columns:1fr auto auto 76px;gap:8px;align-items:baseline;padding:8px 0;border-top:1px solid var(--line);font-size:15px}.e2pl:first-child{border-top:0}
