@@ -58,7 +58,7 @@ function f2Ask(q){q=String(q||'').trim();if(!q)return;const s=q.toLowerCase(),nu
  if(nums.length&&has(/потрат|заплат|купил|ausgegeben|bezahlt|gezahlt|gekauft|spent|paid|bought|wyda|zapłac|harcad|ödedi|dépens|payé|gast[éeo]|pagu?[éeo]/)){const note=(q.match(/(?:\sв\s|\sbei\s|\sat\s|\sw\s|\schez\s|\sen\s)(.+)$/i)||[])[1]||'';f2Go('rec');f2Fill(nums[0],note.trim());return}
  if(has(/кредит|kredit|loan|kredyt|kredi|crédit|préstamo/)){const p={};if(nums[0]>=100)p.amt=nums[0];const y=nums.find((n,j)=>j>0&&n<=40)||(nums[0]<100?nums[0]:0);if(y)p.years=y;f2Go('bf:loan',Object.keys(p).length?p:null);return}
  if(has(/сколько|анализ|wie ?viel|analys|how much|ile |analiz|ne kadar|combien|cu[aá]nto|an[aá]lisis/)){f2Go('kbana');return}
- if(has(/список|купить|einkauf|kaufen|shopping|to buy|buy |zakup|kupi|alışveriş|courses|acheter|compra/)){f2Go('shop');return}
+ if(has(/список|купить|einkauf|kaufen|shopping|to buy|buy |zakup|kupi|alışveriş|courses|acheter|compra/)){const it=(q.match(/(?:купить|kaufen|einkaufen|buy|kupić|kupic|satın al|acheter|comprar)\s+(.+)$/i)||[])[1]||'';f2Go('shop');if(it)f2Items(it.replace(/\s+(?:и|und|and|i|ve|et|y)\s+/gi,', '));return}
  if(has(/цел|ziel|goal|cel\b|cele|hedef|objectif|objetivo|meta/)){f2Go('kbgoals');return}
  if(has(/бюджет|budget|budżet|bütçe|presupuesto/)){f2Go('kbbud');return}
  if(has(/инвест|invest|anlage|etf|акци|aktie|inwest|yatırım|placement|inversi/)){f2Go('bf:lab');return}
@@ -67,6 +67,7 @@ function f2Ask(q){q=String(q||'').trim();if(!q)return;const s=q.toLowerCase(),nu
  m.f2ch=1;m.f2q=q;f2Re()}
 function f2Fill(amount,note){let n=0;const tick=()=>{try{const sc=document.querySelector('.screen');const a=sc&&sc.querySelector('input[inputmode="decimal"],input[type="number"]');if(a&&m.route==='kbnew'){const set=(el,val)=>{el.value=val;el.dispatchEvent(new Event('input',{bubbles:!0}));el.dispatchEvent(new Event('change',{bubbles:!0}))};set(a,amount.toFixed(2).replace('.',g.lang==='en'?'.':','));
    if(note){const t=[...sc.querySelectorAll('input[type="text"],textarea')].filter(x=>x!==a)[0];t&&set(t,note)}return}}catch(e){Hooks.err('f2fill',e)}if(++n<12)setTimeout(tick,120)};setTimeout(tick,150)}
+function f2Items(txt){let n=0;const tick=()=>{try{const el=document.getElementById('k43in'),bt=document.querySelector('[data-act=k43add]');if(el&&bt&&m.route==='kblist'){el.value=txt;el.dispatchEvent(new Event('input',{bubbles:!0}));bt.click();return}}catch(e){Hooks.err('f2items',e)}if(++n<12)setTimeout(tick,120)};setTimeout(tick,150)}
 const f2Re=()=>{try{k3keep(()=>v())}catch{try{v()}catch{}}};
 let f2SR=null;
 Hooks.act('f2mic',()=>{const SR=window.SpeechRecognition||window.webkitSpeechRecognition;if(m.f2rec&&f2SR){try{f2SR.stop()}catch{}return}
