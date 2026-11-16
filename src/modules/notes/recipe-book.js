@@ -41,6 +41,10 @@ const rcS={
  save:['Сохранить','Speichern','Save','Zapisz','Kaydet','Enregistrer','Guardar'],saved:['Рецепт сохранён','Rezept gespeichert','Recipe saved','Przepis zapisany','Tarif kaydedildi','Recette enregistrée','Receta guardada'],
  needName:['Укажите название и хотя бы один ингредиент.','Bitte Name und mindestens eine Zutat angeben.','Enter a name and at least one ingredient.','Podaj nazwę i co najmniej jeden składnik.','Ad ve en az bir malzeme girin.','Indiquez un nom et au moins un ingrédient.','Indique un nombre y al menos un ingrediente.'],
  listT:['В список покупок','Auf die Einkaufsliste','To the shopping list','Do listy zakupów','Alışveriş listesine','Dans la liste de courses','A la lista de compras'],
+ cost:['≈ Стоимость блюда','≈ Kosten des Gerichts','≈ Cost of the dish','≈ Koszt dania','≈ Yemeğin maliyeti','≈ Coût du plat','≈ Coste del plato'],
+ perPor:['на порцию','pro Portion','per portion','na porcję','porsiyon başı','par portion','por ración'],
+ costHave:['цены есть у %a из %b продуктов · считается только то, что уходит в блюдо','Preise für %a von %b Zutaten · gezählt wird nur, was ins Gericht geht','prices for %a of %b ingredients · only what goes into the dish is counted','ceny dla %a z %b składników · liczy się tylko to, co idzie do dania','%b malzemeden %a için fiyat · yalnızca yemeğe girenler sayılır','prix pour %a sur %b ingrédients · seul ce qui entre dans le plat compte','precios de %a de %b ingredientes · solo cuenta lo que va al plato'],
+ costShop:['по магазину: %s','Geschäft: %s','shop: %s','sklep: %s','mağaza: %s','magasin : %s','tienda: %s'],
  home:['дома есть?','zu Hause?','at home?','w domu?','evde var mı?','à la maison ?','¿en casa?'],
  listH:['Снимите галочку с того, что уже есть дома.','Haken weg bei allem, was Sie schon zu Hause haben.','Untick what you already have at home.','Odznacz to, co masz już w domu.','Evde olanların işaretini kaldırın.','Décochez ce que vous avez déjà.','Desmarque lo que ya tiene en casa.'],
  added:['В список добавлено: %n','%n Artikel auf der Liste','%n items added to the list','Dodano do listy: %n','Listeye eklendi: %n','%n articles ajoutés','%n artículos añadidos'],
@@ -88,6 +92,9 @@ function rcBook(){const q=(m.rcQ||'').trim().toLowerCase(),c=m.rcC||'all',sel=m.
  ${L.length?`<div class="rzblist">${L.map(card).join('')}</div>`:`<p class="rzbnone">${i(q?rct('none'):rct('empty'))}</p>`}
  <button type="button" class="rzbnew" data-act="rzbnew">${i(rct('nw'))}</button>
  ${nSel?`<div class="rzbbar"><button type="button" data-act="rzbtolist">${i(rct('toListN',{n:nSel}))}</button></div>`:''}</div>`}
+/* what the dish costs: share of each pack actually used; basics (salt, oil, water) left out */
+function rcCost(r,f){if(typeof e2price!=='function')return null;let sum=0,have=0,all=0;(r.ing||[]).forEach(x=>{if(RC_BASIC.test(String(x.n||'').trim()))return;all++;const b=rcBase({a:x.a==null?null:x.a*f,u:x.u});let p=null;try{p=e2price({t:x.n,rq:b.v!=null&&/^(g|ml|pc)$/.test(b.k)?{k:b.k,v:b.v}:null})}catch{}if(!p)return;
+ let c=null;if(p.pk&&b.v!=null&&p.pk.k===b.k)c=p.p*b.v/p.pk.v;else if(!p.pk&&b.k==='pc'&&b.v!=null)c=p.p*b.v;if(c==null)return;sum+=c;have++});return all?{sum:Math.round(sum),have,all}:null}
 function rcView(){const r=rcGet(m.rcId);if(!r)return rcBook();const por=rcPorOf(r),f=por/(r.por||1),ph=rcPhoto(r.id);
  return`<div class="screen rzbv0 rzbview">${rcHdr(r.t,r.src==='butler'?'<span></span>':`<button class="iconbtn rzbstar${r.fav?' on':''}" data-act="rzbfav" aria-label="★">${r.fav?'★':'☆'}</button>`)}
  ${ph?`<img class="rzbimg" src="${ph}" alt="">`:''}
@@ -95,6 +102,7 @@ function rcView(){const r=rcGet(m.rcId);if(!r)return rcBook();const por=rcPorOf(
  <div class="rzbpor"><span>${i(rct('por'))}</span><button type="button" data-act="rzbpor" data-d="-1">−</button><b>${por}</b><button type="button" data-act="rzbpor" data-d="1">+</button></div>
  <div class="rzbacts"><button type="button" class="rzbbig" data-act="rzbcook">${i(rct('cook'))}</button><button type="button" class="rzbbig2" data-act="rzbonelist">${i(rct('toList'))}</button></div>
  <h3 class="rzbh">${i(rct('ing'))}</h3><ul class="rzbing">${(r.ing||[]).map(x=>`<li><b>${i(rcAmt(x,f))}</b><span>${i(x.n)}</span></li>`).join('')}</ul>
+ ${(()=>{const C=rcCost(r,f);if(!C||!C.have)return'';return`<div class="rzbcost"><div><span>${i(rct('cost'))}</span><b>${i(e2money(C.sum))}</b></div><div><span>${i(rct('perPor'))}</span><b>${i(e2money(Math.round(C.sum/por)))}</b></div><small>${i(rct('costHave',{a:C.have,b:C.all}))}${m.k43shop?' · '+i(rct('costShop',{s:m.k43shop})):''}</small></div>`})()}
  ${(r.steps||[]).length?`<h3 class="rzbh">${i(rct('steps'))}</h3><ol class="rzbsteps">${r.steps.map(s=>`<li>${i(s)}</li>`).join('')}</ol>`:''}
  ${r.note?`<h3 class="rzbh">${i(rct('note'))}</h3><p class="rzbnote">${i(r.note)}</p>`:''}
  ${r.src==='butler'?`<button type="button" class="rzblink" data-act="rzbcopy">${i(rct('copy'))}</button>`:`<div class="rzbfoot"><button type="button" class="rzblink" data-act="rzbedit">✎ ${i(rct('edit'))}</button><button type="button" class="rzblink red" data-act="rzbdel">${i(rct('del'))}</button></div>`}</div>`}
@@ -206,6 +214,7 @@ Hooks.css('recipe-book',`
 .rzbpor button,.rzblsp button{width:38px;height:38px;border-radius:50%;border:1px solid var(--gold);background:transparent;color:var(--ink);font-size:20px;cursor:pointer}
 .rzbacts{display:grid;grid-template-columns:1fr;gap:8px}
 .rzbh{margin:8px 0 0;font-size:17px;font-weight:600;font-family:inherit;letter-spacing:0;text-transform:none}
+.rzbcost{margin:14px 0 4px;padding:14px 16px;border:1px solid var(--gold);border-radius:18px;background:var(--gold-soft)}.rzbcost div{display:flex;justify-content:space-between;align-items:baseline;padding:3px 0}.rzbcost b{font-size:18px;font-family:-apple-system,system-ui,sans-serif}.rzbcost div+div b{font-size:15px}.rzbcost small{display:block;margin-top:6px;color:var(--muted);font-size:12.5px;line-height:1.35}
 .rzbing{list-style:none;margin:0;padding:0}.rzbing li{display:grid;grid-template-columns:96px 1fr;gap:12px;padding:9px 0;border-top:1px solid var(--line);font-size:16px}.rzbing li:first-child{border-top:0}.rzbing b{font-weight:600;font-family:-apple-system,system-ui,sans-serif;font-size:15px;text-align:right;color:var(--gold)}
 .rzbsteps{margin:0;padding-left:22px;display:flex;flex-direction:column;gap:10px}.rzbsteps li{font-size:16px;line-height:1.5}.rzbnote{margin:0;font-size:15px;line-height:1.5;color:var(--muted)}
 .rzbfoot{display:flex;justify-content:space-between}.rzblink{border:0;background:transparent;color:var(--gold);font:inherit;font-size:15px;padding:8px 0;cursor:pointer;text-align:left}.rzblink.red{color:#c0563f}
