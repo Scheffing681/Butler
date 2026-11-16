@@ -42,6 +42,7 @@ money/prognoz-market.js
 money/finance-home.js
 money/finance-book.js
 iphone/headers-keep-height.js
+iphone/theme-resync.js
 books/mirror-of-self.js
 home/tiles-one-tap.js
 notes/shopping-back.js
