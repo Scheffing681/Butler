@@ -6,6 +6,9 @@
     DB_CLIENT_ID   – Client ID of your app on developers.deutschebahn.com
     DB_API_KEY     – API Key of the same app (subscribed to: Timetables, StaDa, FaSta)
     RMV_KEY        – optional, your key from opendata.rmv.de (buses and trams in Hessen)
+    EODHD_KEY      – optional, your API token from eodhd.com (market prices for «Прогноз»)
+    MARKET_PIN     – required with EODHD_KEY: your own PIN (6+ digits). Market data answers only with this PIN,
+                     because a personal data licence does not allow showing prices to other people.
   Optional plain variable:
     ALLOW_ORIGIN   – who may use the server (default: https://scheffing681.github.io)
 */
@@ -14,7 +17,8 @@ const TT = DB + '/timetables/v1';
 const STADA = DB + '/station-data/v2';
 const FASTA = DB + '/fasta/v2';
 const RMV = 'https://www.rmv.de/hapi';
-const VERSION = 1;
+const EOD = 'https://eodhd.com/api';
+const VERSION = 2;
 
 export default {
   async fetch(req, env, ctx) {
@@ -31,12 +35,19 @@ export default {
     if (!ok) return json({ error: 'forbidden' }, 403, cors);
     if (req.method !== 'GET') return json({ error: 'method' }, 405, cors);
     const u = new URL(req.url), p = u.pathname.replace(/\/+$/, '') || '/', q = u.searchParams;
-    const hasDb = !!(env.DB_CLIENT_ID && env.DB_API_KEY), hasRmv = !!env.RMV_KEY;
+    const hasDb = !!(env.DB_CLIENT_ID && env.DB_API_KEY), hasRmv = !!env.RMV_KEY, hasMk = !!(env.EODHD_KEY && env.MARKET_PIN);
     try {
-      if (p === '/' || p === '/ping') return json({ ok: true, v: VERSION, db: hasDb, rmv: hasRmv }, 200, cors);
+      if (p === '/' || p === '/ping') return json({ ok: true, v: VERSION, db: hasDb, rmv: hasRmv, mk: hasMk }, 200, cors);
       if (p.startsWith('/db/') && !hasDb) return json({ error: 'nokey', src: 'db' }, 200, cors);
       if (p.startsWith('/rmv/') && !hasRmv) return json({ error: 'nokey', src: 'rmv' }, 200, cors);
+      if (p.startsWith('/mk/')) {
+        if (!hasMk) return json({ error: 'nokey', src: 'mk' }, 200, cors);
+        if (!pinOk(q.get('pin') || '', String(env.MARKET_PIN))) return json({ error: 'pin' }, 200, cors);
+      }
       const C = { env, ctx };
+      if (p === '/mk/check') return json({ ok: true }, 200, cors);
+      if (p === '/mk/search') return json(await mkSearch(C, (q.get('q') || '').trim()), 200, cors);
+      if (p === '/mk/eod') return json(await mkEod(C, (q.get('s') || '').trim()), 200, cors);
       if (p === '/db/st') return json(await dbStations(C, (q.get('q') || '').trim()), 200, cors);
       if (p === '/db/near') return json(await dbNear(C, +q.get('lat'), +q.get('lon')), 200, cors);
       if (p === '/db/board') return json(await dbBoard(C, q.get('eva'), Math.min(3, Math.max(1, +q.get('h') || 2))), 200, cors);
@@ -190,5 +201,22 @@ async function rmvBoard(C, id) {
   return { src: 'rmv', st: { id, name: station }, ts: Date.now(), list };
 }
 
+/* ---------- market data (EODHD): search and one year of daily closing prices ---------- */
+function pinOk(a, b) { if (a.length !== b.length) return false; let d = 0; for (let i = 0; i < a.length; i++) d |= a.charCodeAt(i) ^ b.charCodeAt(i); return d === 0; }
+async function mkSearch(C, s) {
+  if (s.length < 2 || s.length > 40) return { src: 'eodhd', list: [] };
+  const r = await up(C, EOD + '/search/' + encodeURIComponent(s) + '?limit=15&fmt=json&api_token=' + encodeURIComponent(C.env.EODHD_KEY), 86400, {}, 'json');
+  const list = (Array.isArray(r) ? r : []).map(x => ({ s: x.Code + '.' + x.Exchange, name: x.Name || x.Code, ex: x.Exchange || '', type: x.Type || '', cur: x.Currency || '', isin: x.ISIN || '', cc: x.Country || '' })).filter(x => x.s.length > 2);
+  return { src: 'eodhd', ts: Date.now(), list };
+}
+async function mkEod(C, s) {
+  if (!/^[A-Za-z0-9._-]{1,24}\.[A-Za-z]{1,8}$/.test(s)) return { error: 'symbol' };
+  const d = new Date(Date.now() - 372 * 864e5).toISOString().slice(0, 10);
+  const r = await up(C, EOD + '/eod/' + encodeURIComponent(s) + '?period=d&fmt=json&from=' + d + '&api_token=' + encodeURIComponent(C.env.EODHD_KEY), 72000, {}, 'json');
+  if (!Array.isArray(r) || !r.length) return { src: 'eodhd', s, error: 'nodata' };
+  /* adjusted close includes dividends and splits; plain close is the price you saw on the exchange */
+  return { src: 'eodhd', s, ts: Date.now(), d: r.map(x => x.date), c: r.map(x => +x.close), a: r.map(x => +(x.adjusted_close != null ? x.adjusted_close : x.close)) };
+}
+
 /* exported for local tests */
-export const _t = { attrs, blocks, ttMs, berlinMs, dbBoard, dbStations, dbLifts, rmvBoard, rmvStations };
+export const _t = { attrs, blocks, ttMs, berlinMs, dbBoard, dbStations, dbLifts, rmvBoard, rmvStations, mkSearch, mkEod, pinOk };
