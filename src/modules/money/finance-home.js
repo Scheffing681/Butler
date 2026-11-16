@@ -2,7 +2,7 @@
    One front page for money: an ask bar with a microphone («Что вы хотите сделать?»), nine tiles
    (Кредит · Инвестиции · Сбережения · Сравнение · Бюджет · Недвижимость · Налоги · Финансовый прогноз ·
    Планировщик целей) and the card «Финансовая книга» that opens the household book (the former cover).
-   The whole money area (home, book, Прогноз) wears the light-green look of the design.
+   v283: structure from the design, look of Butler (theme colours, dark and light).
    The ask bar only opens and pre-fills a screen — it never saves by itself. Phrases are parsed on the phone.
    New: a small capital-gains tax calculator (Germany) behind «Налоги».
    Old look: book settings → «Прежний вид главной» (g.fin2off). Data (g.fin) is untouched. */
@@ -22,7 +22,7 @@ const f2S={
  rec:['Записать расход','Ausgabe erfassen','Record expense','Zapisz wydatek','Harcama kaydet','Noter une dépense','Anotar gasto'],ana:['Анализ расходов','Ausgabenanalyse','Spending analysis','Analiza wydatków','Harcama analizi','Analyse des dépenses','Análisis de gastos'],
  shop:['Список покупок','Einkaufsliste','Shopping list','Lista zakupów','Alışveriş listesi','Liste de courses','Lista de compras'],
  old:['Прежний вид главной','Frühere Startansicht','Previous home view','Poprzedni widok','Önceki ana görünüm','Ancienne vue d’accueil','Vista de inicio anterior'],
- oldT:['Вернуть прежнюю обложку и золотой цвет в «Финансах».','Früheres Deckblatt und Gold in «Finanzen» zurückholen.','Bring back the former cover and the gold colour in Finance.','Przywróć dawną okładkę i złoty kolor w Finansach.','Finans’ta eski kapağı ve altın rengi geri getir.','Revenir à l’ancienne couverture et à l’or dans Finances.','Volver a la portada anterior y al dorado en Finanzas.'],
+ oldT:['Вернуть прежнюю обложку «Финансов» вместо главной с плитками.','Früheres Deckblatt statt der Startseite mit Kacheln.','Bring back the former cover instead of the tile home.','Przywróć dawną okładkę zamiast strony z kafelkami.','Kutucuklu ana sayfa yerine eski kapak.','Revenir à l’ancienne couverture au lieu de l’accueil à tuiles.','Volver a la portada anterior en lugar del inicio con mosaicos.'],
  taxT:['Налог с прибыли (Германия)','Steuer auf Kursgewinne (Deutschland)','Capital gains tax (Germany)','Podatek od zysków (Niemcy)','Kazanç vergisi (Almanya)','Impôt sur les plus-values (Allemagne)','Impuesto sobre ganancias (Alemania)'],
  gain:['Прибыль за год','Gewinn im Jahr','Gain in the year','Zysk w roku','Yıllık kazanç','Gain de l’année','Ganancia del año'],
  used:['Уже использовано из 1 000 €','Vom Freibetrag schon genutzt','Allowance already used','Wykorzystana kwota wolna','Kullanılan muafiyet','Abattement déjà utilisé','Exención ya utilizada'],
@@ -85,33 +85,26 @@ Hooks.on('render',()=>{try{if(!f2On()||m.route!=='cat'||m.cat!=='bank')return;co
  if(sc.classList.contains('fin2'))return;const q=document.activeElement&&document.activeElement.dataset&&document.activeElement.dataset.f2q;sc.outerHTML=f2Home();if(q){const el=document.querySelector('[data-f2q]');el&&el.focus()}}catch(e){Hooks.err('f2home',e)}});
 Hooks.on('route',r=>{if(r==='home')m.f2v=''});
 document.addEventListener('click',e=>{try{if(!f2On())return;const b=e.target.closest&&e.target.closest('.screen.bf > .sub-hdr > button:first-child');if(b&&m.route==='bf'){e.preventDefault();e.stopPropagation();m.f2v='';m.cat='bank';R('cat','bank')}}catch{}},!0);
-/* the green look for the money area */
-const f2Zone=()=>/^(kb|bf)/.test(m.route||'')||m.route==='fin'||m.route==='assets'||(m.route==='cat'&&m.cat==='bank');
-const f2Paint=()=>{try{const c=document.documentElement.classList;c.toggle('fin2on',f2On());c.toggle('f2zone',f2On()&&f2Zone())}catch{}};f2Paint();Hooks.on('render',f2Paint);
 /* settings row: back to the former look */
 Hooks.on('screen',(html,route)=>{if(route!=='kbset'||typeof html!=='string')return;return html.replace(/<\/div>\s*$/,`<button type="button" class="dcrow" data-act="f2old"><span><b>${i(f2t('old'))}</b><small>${i(f2t('oldT'))}</small></span><em>${g.fin2off?'✓':''}</em></button></div>`)});
-Hooks.act('f2old',()=>{g.fin2off=g.fin2off?0:1;$();f2Paint();f2Re()});
+Hooks.act('f2old',()=>{g.fin2off=g.fin2off?0:1;$();f2Re()});
 /* «Налоги»: capital gains tax, Germany */
 BF_K.tax={t:f2S.taxT,ic:'🧾',f:c=>[bfF('gain',f2S.gain,0,100000,100,3000,'€'),bfF('used',f2S.used,0,1000,50,0,'€')],
  run:p=>{const free=Math.max(0,BF_FREE-Math.min(BF_FREE,p.used||0)),st=Math.max(0,p.gain-free)*BF_TAX,et=Math.max(0,p.gain*(1-BF_TFS)-free)*BF_TAX;
   return{main:[f2t('tStock'),bfM(st)],rows:[[f2t('tEtf'),bfM(et)],[f2t('net'),bfM(p.gain-st)]],risk:'',assume:f2t('tAs')}}};
 BF_ORDER.push('tax');
 Hooks.css('finance-home',`
-html.fin2on .screen.fin2,html.fin2on .screen.kbv,html.fin2on .screen.bf,html.f2zone .screen,html.f2zone .nav{--bg:#f4faf5;--surface:#ffffff;--field:#ffffff;--ink:#12301d;--muted:#5d7566;--line:#dcebe0;--gold:#1c7c3a;--gold-soft:#e3f3e7;--gold-text:#1c7c3a;--green:#1c7c3a;--green-ink:#ffffff;background:linear-gradient(180deg,#eef8f0,#f8fcf8 240px);color:#12301d}
-html.fin2on .screen.kbv .btn.primary,html.fin2on .screen.bf .btn.primary{background:linear-gradient(180deg,#2a9a4c,#14622c);color:#fff;border-color:transparent}
-html.f2zone .nav{background:#ffffff!important;border-top:1px solid #dcebe0!important}html.f2zone .nav button{color:#5d7566!important}html.f2zone .nav button.on{color:#1c7c3a!important;background:none!important}html.f2zone .nav .mic{background:radial-gradient(circle at 35% 30%,#3cb863,#14622c)!important;color:#fff!important;box-shadow:0 6px 16px rgba(20,98,44,.35)!important;border-color:#fff!important}html.f2zone body,html.f2zone .app{background:#f4faf5}
-html.f2zone .screen .on:not(input):not(svg){background:linear-gradient(180deg,#2a9a4c,#14622c)!important;color:#fff!important;border-color:transparent!important}
 .screen.fin2{display:flex;flex-direction:column;gap:14px}.screen.fin2>*{flex-shrink:0}
-.screen.fin2 .sub-hdr .ttl{display:flex;flex-direction:column;align-items:center}.screen.fin2 .sub-hdr h2{font-family:inherit;font-weight:600;letter-spacing:0;color:#12301d}.screen.fin2 .sub-hdr small{font-size:12.5px;color:#5d7566}.screen.fin2 .iconbtn{color:#12301d}
-.f2ask{display:flex;align-items:center;gap:8px;background:#fff;border:1px solid #dcebe0;border-radius:999px;padding:6px 6px 6px 14px;box-shadow:0 4px 14px rgba(20,98,44,.08)}
-.f2ask input{flex:1;min-width:0;border:0;background:transparent;font:inherit;font-size:16px;color:#12301d;outline:none}.f2ask input::placeholder{color:#5d7566}
-.f2sp{color:#1c7c3a;display:flex}.f2sp svg{width:22px;height:22px}
-.f2mic{width:44px;height:44px;border-radius:50%;border:0;background:radial-gradient(circle at 35% 30%,#3cb863,#14622c);color:#fff;display:flex;align-items:center;justify-content:center;cursor:pointer;box-shadow:0 4px 10px rgba(20,98,44,.35)}.f2mic svg{width:22px;height:22px}.f2mic.on{animation:f2p 1s infinite}
-@keyframes f2p{50%{box-shadow:0 0 0 10px rgba(60,184,99,.25)}}
+.screen.fin2 .sub-hdr .ttl{display:flex;flex-direction:column;align-items:center}.screen.fin2 .sub-hdr small{font-size:13px;color:var(--muted)}
+.f2ask{display:flex;align-items:center;gap:8px;background:var(--surface);border:1px solid var(--line);border-radius:999px;padding:6px 6px 6px 14px;box-shadow:0 4px 14px rgba(0,0,0,.06)}
+.f2ask input{flex:1;min-width:0;border:0;background:transparent;font:inherit;font-size:16px;color:var(--ink);outline:none}.f2ask input::placeholder{color:var(--muted)}
+.f2sp{color:var(--gold);display:flex}.f2sp svg{width:22px;height:22px}
+.f2mic{width:44px;height:44px;border-radius:50%;border:0;background:linear-gradient(180deg,color-mix(in srgb,var(--gold) 75%,#fff),var(--gold));color:#17130b;display:flex;align-items:center;justify-content:center;cursor:pointer;box-shadow:0 4px 10px color-mix(in srgb,var(--gold) 40%,transparent)}.f2mic svg{width:22px;height:22px}.f2mic.on{animation:f2p 1s infinite}
+@keyframes f2p{50%{box-shadow:0 0 0 10px color-mix(in srgb,var(--gold) 30%,transparent)}}
 .f2grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
-.f2grid button{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;min-height:92px;padding:12px 6px;background:#fff;border:1px solid #e3efe6;border-radius:18px;font:inherit;font-size:13px;line-height:1.2;color:#12301d;text-align:center;cursor:pointer;box-shadow:0 3px 10px rgba(20,98,44,.06);overflow-wrap:anywhere}
-.f2grid svg{width:30px;height:30px;color:#1c7c3a}.f2grid button:active,.f2book:active{transform:scale(.98)}
-.f2book{display:flex;align-items:center;gap:14px;padding:16px;background:linear-gradient(135deg,#f1faf3,#ffffff);border:1.5px solid #2a9a4c;border-radius:18px;font:inherit;color:#12301d;text-align:left;cursor:pointer}
-.f2book svg{width:40px;height:40px;color:#1c7c3a;flex:0 0 auto}.f2book span{flex:1;display:flex;flex-direction:column;gap:2px}.f2book b{font-size:16px;font-weight:600}.f2book small{color:#5d7566;font-size:13px}.f2book em{font-style:normal;font-size:22px;color:#12301d}
-.f2ch{display:flex;flex-direction:column;gap:8px}.f2ch small{color:#5d7566}.f2ch div{display:flex;flex-wrap:wrap;gap:8px}.f2ch button{border:1px solid #2a9a4c;background:#fff;color:#14622c;font:inherit;font-size:14px;padding:8px 14px;border-radius:999px;cursor:pointer}
+.f2grid button{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;min-height:92px;padding:12px 6px;background:var(--surface);border:1px solid var(--line);border-radius:18px;font:inherit;font-size:14px;line-height:1.2;color:var(--ink);text-align:center;cursor:pointer;overflow-wrap:anywhere}
+.f2grid svg{width:30px;height:30px;color:var(--gold)}.f2grid button:active,.f2book:active{transform:scale(.98)}
+.f2book{display:flex;align-items:center;gap:14px;padding:16px;background:linear-gradient(135deg,var(--gold-soft),var(--surface));border:1.5px solid var(--gold);border-radius:18px;font:inherit;color:var(--ink);text-align:left;cursor:pointer}
+.f2book svg{width:40px;height:40px;color:var(--gold);flex:0 0 auto}.f2book span{flex:1;display:flex;flex-direction:column;gap:2px}.f2book b{font-size:17px;font-weight:600}.f2book small{color:var(--muted);font-size:13.5px}.f2book em{font-style:normal;font-size:22px}
+.f2ch{display:flex;flex-direction:column;gap:8px}.f2ch small{color:var(--muted)}.f2ch div{display:flex;flex-wrap:wrap;gap:8px}.f2ch button{border:1px solid var(--gold);background:var(--surface);color:var(--ink);font:inherit;font-size:14px;padding:8px 14px;border-radius:999px;cursor:pointer}
 `);
