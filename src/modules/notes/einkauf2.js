@@ -12,6 +12,8 @@ const e2S={
  fav:['Избранное','Favoriten','Favourites','Ulubione','Favoriler','Favoris','Favoritos'],
  shops:['Магазины','Geschäfte','Shops','Sklepy','Mağazalar','Magasins','Tiendas'],off:['Акции','Angebote','Offers','Promocje','Fırsatlar','Promos','Ofertas'],
  chk:['Чек','Beleg','Receipt','Paragon','Fiş','Ticket','Ticket'],plan:['План','Plan','Plan','Plan','Plan','Plan','Plan'],
+ act:['Акции учтены','Angebote aktiv','Offers on','Promocje aktywne','Fırsatlar aktif','Promos actives','Ofertas activas'],
+ offOn:['%n акций на товары из вашего списка','%n Angebote für Ihre Liste','%n offers for your list','%n promocji na Twoją listę','Listeniz için %n fırsat','%n promos pour votre liste','%n ofertas para su lista'],
  planT:['План закупки','Einkaufsplan','Shopping plan','Plan zakupów','Alışveriş planı','Plan d’achat','Plan de compra'],
  est:['Примерная сумма','Geschätzte Summe','Estimated total','Szacowana suma','Tahmini toplam','Total estimé','Total estimado'],
  orig:['без акций','ohne Angebote','without offers','bez promocji','fırsatsız','sans promos','sin ofertas'],
@@ -65,9 +67,12 @@ Hooks.on('render',()=>{try{if(m.route!=='kblist')return;const sc=document.queryS
   b.innerHTML=`<span class="e2p" data-act="e2pr" data-i="${k}"><strong>${i(e2money(p.p))}</strong>${pct||note?`<span class="e2l">${pct?`<em>−${pct}%</em><s>${i(e2money(p.old))}</s>`:''}${note?`<small>${i(note)}</small>`:''}</span>`:''}</span>`});
  const S=e2sum(),sub=sc.querySelector('.k4sub');if(sub&&S.est)sub.textContent=sub.textContent.split(' · ')[0]+' · ≈ '+e2money(S.est);
  const go=sc.querySelector('.k4go small');if(go)go.textContent=S.est?'≈ '+e2money(S.est):'';
- const shopCard=sc.querySelector('.k4shop');if(shopCard&&!m.k43shop&&/autoNo|keine Preise|No prices|Цен|prices yet/i.test(shopCard.textContent)&&!S.have)shopCard.remove();
+ const shopCard=sc.querySelector('.k4shop');if(shopCard&&!m.k43shop){const cnt={};(L.items||[]).filter(x=>!x.d).forEach(x=>{const seen=new Set();e2offers().forEach(o=>{if(o.shop&&!seen.has(o.shop)&&e2match(x.t,o.t)){seen.add(o.shop);cnt[o.shop]=(cnt[o.shop]||0)+1}})});const best=Object.keys(cnt).sort((a,b)=>cnt[b]-cnt[a])[0];
+  const b0=shopCard.querySelector('b'),s0=shopCard.querySelector('small');if(best&&b0&&s0&&/Kein|Нет|No shop|Brak|yok|Aucun|Ningún|Sin/i.test(b0.textContent)){b0.textContent=best;s0.textContent=e2t('offOn',{n:cnt[best]})}else if(!S.have&&/autoNo|keine Preise|No prices|Цен|prices yet/i.test(shopCard.textContent))shopCard.remove()}
  if(S.all){const pct=S.orig>0&&S.save>0.004?Math.round(S.save/S.orig*100):0;const card=document.createElement('div');card.className='e2plan';card.id='e2plan';
-  card.innerHTML=S.have?`<h3>${i(e2t('planT'))}</h3><div class="e2tot"><span>${i(e2t('est'))}</span><b>${i(e2money(S.est))}</b></div>${pct?`<p>${i(e2t('orig'))}: <s>${i(e2money(S.orig))}</s> · ${i(e2t('save'))}: <em>${i(e2money(S.save))} (−${pct}%)</em></p>`:''}<small>${i(e2t('have',{a:S.have,b:S.all}))}</small>`:`<h3>${i(e2t('planT'))}</h3><small>${i(e2t('noPr'))}</small>`;
+  const PR=(Yl().items||[]).filter(x=>!x.d).map(x=>[x,e2price(x)]).filter(z=>z[1]),act=PR.some(z=>z[1].src==='off');
+  const lines=PR.map(([x,p])=>{const pc=p.old>p.p?Math.round((1-p.p/p.old)*100):0;return`<div class="e2pl"><span>${i(x.t)}${e2qty(x)>1?` ×${e2qty(x)}`:''}</span>${pc?`<em>−${pc}%</em><s>${i(e2money(p.old))}</s>`:'<em class="no"></em><s></s>'}<b>${i(e2money(p.p))}</b></div>`}).join('');
+  card.innerHTML=S.have?`<div class="e2ph"><h3>${i(e2t('planT'))}</h3>${act?`<span class="e2act">🏷 ${i(e2t('act'))}</span>`:''}</div><div class="e2pls">${lines}</div><div class="e2tot"><span>${i(e2t('est'))}</span><b>${i(e2money(S.est))}</b></div>${pct?`<p>${i(e2t('orig'))}: <s>${i(e2money(S.orig))}</s> · ${i(e2t('save'))}: <em>${i(e2money(S.save))} (−${pct}%)</em></p>`:''}<small>${i(e2t('have',{a:S.have,b:S.all}))}</small>`:`<h3>${i(e2t('planT'))}</h3><small>${i(e2t('noPr'))}</small>`;
   const list=sc.querySelector('.k4list');if(list)list.insertAdjacentElement('afterend',card)}}catch(e){Hooks.err('e2list',e)}});
 const e2Re=()=>{try{k3keep(()=>v())}catch{try{v()}catch{}}};
 Hooks.act('e2plan',()=>{const c=document.getElementById('e2plan');if(c)c.scrollIntoView({behavior:'smooth',block:'center'})});
@@ -106,7 +111,10 @@ Hooks.css('einkauf2',`
 .e2add{border:0;background:transparent;color:var(--gold);font:inherit;font-size:13px;font-weight:400;padding:4px 0;cursor:pointer;white-space:nowrap}
 .e2plan{margin:16px 0;padding:14px 16px;border-radius:18px;border:1px solid var(--line);background:var(--surface);color:var(--ink)}
 .e2plan h3{margin:0 0 8px;font-size:17px;font-weight:600;font-family:inherit;letter-spacing:0;text-transform:none}
-.e2tot{display:flex;justify-content:space-between;align-items:baseline}.e2tot span{font-size:15px}.e2tot b{font-size:22px;font-weight:600;color:var(--gold);font-family:-apple-system,'SF Pro Text',system-ui,sans-serif}
+.e2ph{display:flex;align-items:center;justify-content:space-between;gap:8px}.e2ph h3{margin:0 0 8px}.e2act{font-size:12px;padding:4px 10px;border-radius:999px;background:var(--gold-soft);color:var(--ink);white-space:nowrap}
+.e2pls{margin:4px 0 10px}.e2pl{display:grid;grid-template-columns:1fr auto auto 76px;gap:8px;align-items:baseline;padding:8px 0;border-top:1px solid var(--line);font-size:15px}.e2pl:first-child{border-top:0}
+.e2pl em{font-style:normal;font-size:11px;font-weight:600;color:#fff;background:#c0563f;border-radius:8px;padding:1px 6px}.e2pl em.no{background:none;padding:0}.e2pl s{font-size:12.5px;color:var(--muted)}.e2pl b{text-align:right;font-weight:600;font-family:-apple-system,'SF Pro Text',system-ui,sans-serif;font-variant-numeric:tabular-nums}
+.e2tot{padding-top:10px;border-top:1px solid var(--line);display:flex;justify-content:space-between;align-items:baseline}.e2tot span{font-size:15px}.e2tot b{font-size:22px;font-weight:600;color:var(--gold);font-family:-apple-system,'SF Pro Text',system-ui,sans-serif}
 .e2plan p{margin:6px 0 0;font-size:14px;color:var(--muted)}.e2plan p em{font-style:normal;color:var(--ok,#2E7D4F);font-weight:600}.e2plan small{display:block;margin-top:6px;font-size:12.5px;color:var(--muted)}
 .e2box h4{margin:16px 0 8px;font-size:15px;font-weight:600}
 .e2f{display:flex;flex-direction:column;gap:10px}.e2f label{display:flex;flex-direction:column;gap:4px;font-size:13px;color:var(--muted)}
