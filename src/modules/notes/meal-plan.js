@@ -3,8 +3,8 @@
 const mpS={
  title:['Меню на неделю','Wochenplan','Weekly menu','Menu na tydzień','Haftalık menü','Menu de la semaine','Menú semanal'],
  card:['🗓 Меню на неделю','🗓 Wochenplan','🗓 Weekly menu','🗓 Menu na tydzień','🗓 Haftalık menü','🗓 Menu de la semaine','🗓 Menú semanal'],
- cardN:['запланировано блюд: %n','geplante Gerichte: %n','dishes planned: %n','zaplanowane dania: %n','planlanan yemek: %n','plats prévus : %n','platos planeados: %n'],
- cardE:['разложите рецепты по дням — список покупок соберётся сам','Rezepte auf Tage verteilen — die Einkaufsliste entsteht von selbst','put recipes on days — the shopping list builds itself','rozłóż przepisy na dni — lista zakupów zrobi się sama','tarifleri günlere dağıtın — alışveriş listesi kendiliğinden oluşur','répartissez les recettes sur les jours — la liste se fait toute seule','reparta las recetas por días — la lista se hace sola'],
+ cardN:['на неделе блюд: %n','Gerichte diese Woche: %n','dishes this week: %n','dań w tygodniu: %n','bu hafta yemek: %n','plats cette semaine : %n','platos esta semana: %n'],
+ cardE:['блюда по дням → один список','Gerichte pro Tag → eine Liste','dishes per day → one list','dania na dni → jedna lista','günlere yemek → tek liste','plats par jour → une liste','platos por día → una lista'],
  add:['＋ блюдо','＋ Gericht','＋ dish','＋ danie','＋ yemek','＋ plat','＋ plato'],
  pick:['Что приготовить?','Was kochen?','What to cook?','Co ugotować?','Ne pişirelim?','Que cuisiner ?','¿Qué cocinar?'],
  find:['Найти рецепт','Rezept suchen','Find a recipe','Szukaj przepisu','Tarif ara','Chercher une recette','Buscar receta'],
