@@ -43,6 +43,7 @@ money/finance-home.js
 money/finance-book.js
 notes/einkauf2.js
 notes/einkauf-scan.js
+notes/recipe-book.js
 iphone/headers-keep-height.js
 iphone/theme-resync.js
 books/mirror-of-self.js
