@@ -72,26 +72,7 @@ Hooks.css('finance-book',`
 .f3add{border:0;border-radius:999px;padding:14px;font:inherit;font-size:16px;font-weight:600;color:#17130b;background:linear-gradient(180deg,color-mix(in srgb,var(--gold) 75%,#fff),var(--gold));cursor:pointer}
 .f3more{flex-shrink:0;margin-top:6px;border-top:1px solid var(--line);padding-top:6px}.f3more>summary{list-style:none;cursor:pointer;padding:10px 2px;color:var(--gold);font-size:15px}.f3more>summary::-webkit-details-marker{display:none}.f3more[open]>summary{margin-bottom:8px}.f3more>*:not(summary){margin-bottom:12px}
 `);
-/* ---- shopping list: prices and a budget («План закупки») ---- */
-const f3L={plan:['План закупки','Einkaufsplan','Shopping plan','Plan zakupów','Alışveriş planı','Plan d’achat','Plan de compra'],bud:['Бюджет','Budget','Budget','Budżet','Bütçe','Budget','Presupuesto'],sum:['Сумма','Summe','Total','Suma','Toplam','Total','Suma'],rest:['Остаток','Rest','Left','Zostaje','Kalan','Reste','Resto'],
- price:['цена','Preis','price','cena','fiyat','prix','precio'],hint:['Впишите цены — Butler посчитает сумму и остаток.','Preise eintragen – Butler rechnet Summe und Rest.','Enter prices – Butler adds them up and shows what is left.','Wpisz ceny – Butler policzy sumę i resztę.','Fiyatları girin – Butler toplamı ve kalanı hesaplar.','Saisissez les prix – Butler calcule le total et le reste.','Escriba los precios: Butler calcula la suma y el resto.']};
-const f3l=k=>cv5n(f3L[k]);
-const f3Note=()=>{try{return(g.notes||[]).find(n=>n&&n.k==='list'&&n.shop&&Array.isArray(n.items))}catch{return null}};
-const f3Num=x=>{const n=parseFloat(String(x==null?'':x).replace(',','.'));return n>0?Math.round(n*100)/100:0};
-const f3Tot=N=>{const sum=N.items.reduce((a,it)=>a+(+it.p||0),0),bud=+N.bud||0;return{sum,bud,rest:bud-sum}};
-const f3Sums=N=>{const t=f3Tot(N),c=U().cur;return`<div class="f3r"><span>${i(f3l('sum'))}</span><b>${i(B(Math.round(t.sum*100),c))}</b></div>${t.bud?`<div class="f3r tot${t.rest<0?' neg':''}"><span>${i(f3l('rest'))}</span><b>${i(B(Math.round(t.rest*100),c))}</b></div>`:''}`};
-Hooks.on('render',()=>{try{if(g.fin2off||m.route!=='kblist')return;const sc=document.querySelector('.screen.k43');const N=f3Note();if(!sc||!N||!N.items.length||sc.querySelector('.f3shop'))return;const cur=U().cur||'';
- const d=document.createElement('div');d.className='f3shop';d.innerHTML=`<h3>${i(f3l('plan'))}</h3>${N.items.map((it,j)=>`<label class="f3it${it.d?' done':''}"><span>${i(it.t)}</span><span class="f3in"><input type="number" inputmode="decimal" min="0" step="0.01" placeholder="${i(f3l('price'))}" value="${it.p||''}" data-f3pr="${j}"><em>${i(cur)}</em></span></label>`).join('')}
- <label class="f3it bud"><span>${i(f3l('bud'))}</span><span class="f3in"><input type="number" inputmode="decimal" min="0" value="${N.bud||''}" data-f3bud="1"><em>${i(cur)}</em></span></label><div class="f3sums">${f3Sums(N)}</div><p>${i(f3l('hint'))}</p>`;
- const bar=sc.querySelector('.k4bar');sc.insertBefore(d,bar||null)}catch(e){Hooks.err('f3shop',e)}});
-document.addEventListener('input',e=>{try{const t=e.target;if(!t||!t.dataset)return;const N=f3Note();if(!N)return;if(t.dataset.f3pr!=null&&t.dataset.f3pr!==''){const it=N.items[+t.dataset.f3pr];if(!it)return;const n=f3Num(t.value);if(n)it.p=n;else delete it.p}else if(t.dataset.f3bud){const n=f3Num(t.value);if(n)N.bud=n;else delete N.bud}else return;
- const s=document.querySelector('.f3sums');if(s)s.innerHTML=f3Sums(N);clearTimeout(f3Note.t);f3Note.t=setTimeout(()=>{try{$()}catch{}},600)}catch(x){Hooks.err('f3pr',x)}},!0);
-Hooks.css('finance-shop',`
-.f3shop{display:flex;flex-direction:column;gap:8px;margin:14px 0;padding:14px;border-radius:18px;background:var(--surface);border:1px solid var(--line);color:var(--ink)}
-.f3shop h3{margin:0;font-size:17px;font-weight:600;font-family:inherit;letter-spacing:0;text-transform:none}.f3shop p{margin:0;font-size:13px;color:var(--muted)}
-.f3it{display:grid;grid-template-columns:1fr 130px;gap:10px;align-items:center;font-size:15px}.f3it.done>span:first-child{text-decoration:line-through;color:var(--muted)}.f3it.bud{margin-top:6px;padding-top:10px;border-top:1px solid var(--line);font-weight:600}
-.f3r{display:flex;justify-content:space-between;font-size:15px;padding:3px 0}.f3r.tot b{font-size:19px;color:var(--gold)}.f3r.tot.neg b{color:#c0563f}
-`);
+/* the shopping-list price block of v281 moved to notes/einkauf2.js (prices in the rows, offers, plan) */
 /* ---- goals: «Рекомендация Butler» — plain arithmetic on the goal's own monthly amount ---- */
 const f3G={rec:['Рекомендация Butler','Butler-Hinweis','Butler’s note','Wskazówka Butlera','Butler’ın notu','Conseil de Butler','Consejo de Butler'],
  t:['Если откладывать %m в месяц, цель «%g» будет достигнута через %d.','Wenn Sie %m im Monat zurücklegen, ist das Ziel «%g» in %d erreicht.','If you put aside %m a month, the goal “%g” is reached in %d.','Odkładając %m miesięcznie, cel „%g” osiągniesz za %d.','Ayda %m ayırırsanız «%g» hedefine %d sonra ulaşılır.','En mettant %m de côté par mois, l’objectif « %g » est atteint dans %d.','Si aparta %m al mes, la meta «%g» se alcanza en %d.'],
